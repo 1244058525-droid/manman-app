@@ -1,0 +1,8 @@
+{
+  "appId": "com.manman.companion",
+  "appName": "慢慢",
+  "webDir": "app",
+  "server": {
+    "androidScheme": "https"
+  }
+}

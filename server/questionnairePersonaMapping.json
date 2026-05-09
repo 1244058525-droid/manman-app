@@ -1,0 +1,1864 @@
+{
+  "schema_version": "1.0.0",
+  "updated_at": "2026-05-06",
+  "language": "zh-CN",
+  "product_stage": "MVP_planning",
+  "related_configs": {
+    "persona_config": "companion_persona_config_v1_yaml",
+    "questionnaire_source": "initial_persona_questionnaire_v1"
+  },
+  "persona_ids": {
+    "fog_organizer": "雾中整理者",
+    "moon_observer": "月光观察者",
+    "gentle_reservoir": "温柔蓄水池",
+    "order_seeker": "秩序寻光者",
+    "hesitant_chooser": "迟疑选择者",
+    "inspiration_drifter": "灵感漂流者",
+    "light_life_seeker": "轻盈生活派",
+    "silent_repairer": "静默修复者",
+    "tiny_light_actor": "微光行动者",
+    "warm_island_caregiver": "暖岛照护者",
+    "soft_boundary_keeper": "柔软边界者",
+    "cloud_rest_seeker": "云层休息者",
+    "star_path_planner": "星轨计划者",
+    "morning_restart": "晨光重启者",
+    "soft_fire_seed": "微光火种",
+    "slow_warm_approacher": "慢热靠近者"
+  },
+  "mvp_persona_ids": [
+    "fog_organizer",
+    "moon_observer",
+    "gentle_reservoir",
+    "order_seeker",
+    "hesitant_chooser",
+    "inspiration_drifter",
+    "cloud_rest_seeker",
+    "tiny_light_actor"
+  ],
+  "scoring_overview": {
+    "method": "weighted_tag_accumulation",
+    "description": "Each selected answer adds scores to one or more companion personas, and also updates user profile fields. After scoring, the system returns primary_persona, optional secondary_persona, confidence, profile_summary, support_methods, avoid_methods, and editable notice.\n",
+    "important_rules": [
+      "Do not determine persona from a single answer.",
+      "Q1, Q3, Q4, Q7, Q8, and Q9 are high-impact scoring questions.",
+      "Q13 and Q14 are open-ended. They should not automatically confirm sensitive facts.",
+      "If the highest score is not clearly higher than the second score, show a secondary persona.",
+      "If answers are sparse or contradictory, set confidence to low.",
+      "If user rejects a result, lower confidence or set status to rejected."
+    ]
+  },
+  "score_weights": {
+    "primary_state_question": 3,
+    "communication_preference_question": 3,
+    "decision_action_question": 3,
+    "life_role_question": 2,
+    "aspiration_question": 2,
+    "push_boundary_question": 1,
+    "open_text_semantic_signal": 3
+  },
+  "confidence_rules": {
+    "high": {
+      "min_primary_score": 12,
+      "min_gap_from_secondary": 4,
+      "min_answered_questions": 8,
+      "description": "Multiple answers strongly point to the same persona."
+    },
+    "medium": {
+      "min_primary_score": 8,
+      "min_gap_from_secondary": 2,
+      "min_answered_questions": 6,
+      "description": "Enough signals for a first companion guide, but still avoid fixed-label language."
+    },
+    "low": {
+      "description": "Sparse, weak, or contradictory signals. Show cautious copy and ask user to edit if needed."
+    }
+  },
+  "secondary_persona_rules": {
+    "enable_secondary_persona": true,
+    "max_secondary_count": 1,
+    "show_secondary_if": [
+      "secondary_score >= 70% of primary_score",
+      "primary_score - secondary_score <= 3"
+    ],
+    "do_not_show_secondary_if": [
+      "confidence == low and secondary score is weak",
+      "secondary persona conflicts with user's explicit preference"
+    ]
+  },
+  "status_rules": {
+    "initial_result_status": "inferred",
+    "user_can_confirm": true,
+    "user_can_reject": true,
+    "user_can_hide": true,
+    "user_can_delete": true
+  },
+  "recommended_output_shape": {
+    "persona_result": {
+      "primary_persona_id": "string",
+      "primary_persona_name": "string",
+      "secondary_persona_id": "string | null",
+      "secondary_persona_name": "string | null",
+      "confidence": "low | medium | high",
+      "status": "inferred | confirmed | rejected | outdated",
+      "evidence": [
+        {
+          "question_id": "Q1",
+          "option_id": "A",
+          "reason": "string",
+          "added_scores": {
+            "fog_organizer": 0
+          }
+        }
+      ],
+      "generated_at": "ISO-8601 datetime",
+      "user_visible": true
+    },
+    "profile_patch": {
+      "current_state": {
+      },
+      "life_role_profile": {
+      },
+      "emotion_pattern": {
+      },
+      "decision_pattern": {
+      },
+      "communication_preference": {
+      },
+      "action_barrier": {
+      },
+      "aesthetic_value": {
+      },
+      "ideal_self": {
+      },
+      "push_preference": {
+      }
+    },
+    "result_page": {
+      "headline": "你现在更像「{primary_persona_name}」。",
+      "intro_copy": "string",
+      "how_i_should_support_you": [
+        "string"
+      ],
+      "how_i_should_not_talk_to_you": [
+        "string"
+      ],
+      "current_profile_summary": {
+      },
+      "editable_notice": "这只是第一版，你之后随时可以改。"
+    }
+  },
+  "questions": {
+    "Q1": {
+      "title": "最近的你，更像哪一种状态？",
+      "type": "single_choice",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "很累，但停不下来",
+          "persona_scores": {
+            "cloud_rest_seeker": 3,
+            "gentle_reservoir": 2,
+            "warm_island_caregiver": 2,
+            "silent_repairer": 1
+          },
+          "profile_patch": {
+            "current_state": {
+              "stress_level": "high"
+            },
+            "emotion_pattern": {
+              "primary_emotion": "疲惫"
+            },
+            "action_barrier": {
+              "energy_level": "low"
+            }
+          },
+          "interpretation": "用户可能处于高消耗状态，优先避免催促和复杂方案。"
+        },
+        "B": {
+          "label": "脑子很乱，事情很多",
+          "persona_scores": {
+            "fog_organizer": 3,
+            "order_seeker": 2,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "primary_emotion": "焦虑",
+              "triggers": [
+                "信息过载"
+              ]
+            },
+            "action_barrier": {
+              "barrier_type": "unclear_start_point"
+            }
+          },
+          "interpretation": "用户需要先整理混乱，而不是立刻被推进行动。"
+        },
+        "C": {
+          "label": "有点空，不太知道自己想要什么",
+          "persona_scores": {
+            "cloud_rest_seeker": 2,
+            "silent_repairer": 2,
+            "slow_warm_approacher": 1,
+            "star_path_planner": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "primary_emotion": "空虚",
+              "low_mood_time": [
+                "独处",
+                "睡前"
+              ]
+            }
+          },
+          "interpretation": "用户可能需要低压陪伴和慢慢恢复方向感。"
+        },
+        "D": {
+          "label": "表面正常，但心里消耗很大",
+          "persona_scores": {
+            "gentle_reservoir": 3,
+            "moon_observer": 2,
+            "silent_repairer": 2,
+            "soft_fire_seed": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "secondary_emotion": "内耗"
+            },
+            "communication_preference": {
+              "preferred_role": "gentle_mirror"
+            }
+          },
+          "interpretation": "用户可能习惯隐藏消耗，需要先被接住。"
+        },
+        "E": {
+          "label": "想变好，但就是动不起来",
+          "persona_scores": {
+            "tiny_light_actor": 3,
+            "morning_restart": 2,
+            "cloud_rest_seeker": 1,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "barrier_type": "低能量/启动困难",
+              "ideal_action_size": "tiny"
+            }
+          },
+          "interpretation": "用户适合极小行动，不适合完整计划。"
+        },
+        "F": {
+          "label": "其实还可以，只是想找个更懂我的 AI",
+          "persona_scores": {
+            "slow_warm_approacher": 2,
+            "star_path_planner": 1,
+            "light_life_seeker": 1,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "current_state": {
+              "stress_level": "medium_or_low",
+              "recent_goal": "更被理解"
+            },
+            "communication_preference": {
+              "need_personalization": true
+            }
+          },
+          "interpretation": "用户不是强情绪需求，更偏体验个性化和长期理解。"
+        }
+      }
+    },
+    "Q2": {
+      "title": "你通常在什么时候，最想有人陪你一下？",
+      "type": "multi_choice_max_3",
+      "scoring_importance": "medium",
+      "options": {
+        "A": {
+          "label": "睡前，脑子开始乱的时候",
+          "persona_scores": {
+            "fog_organizer": 2,
+            "moon_observer": 2,
+            "cloud_rest_seeker": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "low_mood_time": [
+                "睡前"
+              ]
+            }
+          },
+          "interpretation": "睡前混乱可能需要低压整理和安静陪伴。"
+        },
+        "B": {
+          "label": "工作/学习被打断、被否定之后",
+          "persona_scores": {
+            "soft_fire_seed": 2,
+            "moon_observer": 2,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "triggers": [
+                "被否定",
+                "工作压力"
+              ]
+            }
+          },
+          "interpretation": "用户对否定和中断敏感，需要先保护感受。"
+        },
+        "C": {
+          "label": "做选择，不知道该怎么办的时候",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "decision_style": "犹豫型"
+            }
+          },
+          "interpretation": "用户需要降低选择压力和后悔感。"
+        },
+        "D": {
+          "label": "和别人相处不舒服之后",
+          "persona_scores": {
+            "moon_observer": 2,
+            "soft_boundary_keeper": 2,
+            "soft_fire_seed": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "relationship_role": "关系消耗型"
+            },
+            "emotion_pattern": {
+              "triggers": [
+                "人际摩擦"
+              ]
+            }
+          },
+          "interpretation": "用户关系场景敏感，适合映照和边界支持。"
+        },
+        "E": {
+          "label": "刷手机刷到空下来的时候",
+          "persona_scores": {
+            "cloud_rest_seeker": 2,
+            "light_life_seeker": 1,
+            "silent_repairer": 1
+          },
+          "profile_patch": {
+            "emotion_pattern": {
+              "primary_emotion": "空虚",
+              "coping_style": "刷短视频逃避"
+            }
+          },
+          "interpretation": "用户可能在空下来时感到失重，适合轻陪伴。"
+        },
+        "F": {
+          "label": "一个人吃饭、通勤、散步的时候",
+          "persona_scores": {
+            "slow_warm_approacher": 2,
+            "moon_observer": 1,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "relationship_role": "单身独处型/高连接需求型"
+            }
+          },
+          "interpretation": "用户可能需要日常低压连接，而不是强推送。"
+        },
+        "G": {
+          "label": "买东西前，想让人帮我判断一下",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "light_life_seeker": 1,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "consumption_role": "犹豫比较者/冲动购买者"
+            }
+          },
+          "interpretation": "用户适合消费决策陪伴，重点是帮她找到真实偏好。"
+        }
+      }
+    },
+    "Q3": {
+      "title": "你状态不好的时候，最不想听到哪种话？",
+      "type": "multi_choice_max_3",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "“你要积极一点”",
+          "persona_scores": {
+            "cloud_rest_seeker": 2,
+            "gentle_reservoir": 1,
+            "soft_fire_seed": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "dislike_phrases": [
+                "过度积极"
+              ]
+            }
+          },
+          "interpretation": "避免积极绑架，优先承认当下状态。"
+        },
+        "B": {
+          "label": "“你已经很棒了”这种泛泛鼓励",
+          "persona_scores": {
+            "moon_observer": 2,
+            "fog_organizer": 1,
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "dislike_phrases": [
+                "鸡汤"
+              ]
+            }
+          },
+          "interpretation": "用户不喜欢空泛安慰，需要更具体的理解。"
+        },
+        "C": {
+          "label": "一上来就给我分析原因",
+          "persona_scores": {
+            "cloud_rest_seeker": 2,
+            "gentle_reservoir": 2,
+            "silent_repairer": 2,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "dislike_phrases": [
+                "过早分析"
+              ]
+            },
+            "readiness_default": "emotional"
+          },
+          "interpretation": "情绪态先陪伴，不能分析先行。"
+        },
+        "D": {
+          "label": "直接告诉我“你就是在逃避/内耗”",
+          "persona_scores": {
+            "moon_observer": 2,
+            "soft_fire_seed": 2,
+            "slow_warm_approacher": 2
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "dislike_phrases": [
+                "直接下定义"
+              ]
+            }
+          },
+          "interpretation": "避免给用户下定义，尤其避免评判性归因。"
+        },
+        "E": {
+          "label": "给我列一堆建议",
+          "persona_scores": {
+            "tiny_light_actor": 2,
+            "cloud_rest_seeker": 2,
+            "fog_organizer": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "dislike_phrases": [
+                "建议过载"
+              ]
+            },
+            "action_barrier": {
+              "ideal_action_size": "small_or_tiny"
+            }
+          },
+          "interpretation": "建议数量要少，必要时只给一个小动作。"
+        },
+        "F": {
+          "label": "一直问我“为什么”",
+          "persona_scores": {
+            "silent_repairer": 3,
+            "slow_warm_approacher": 2,
+            "cloud_rest_seeker": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "question_tolerance": "low"
+            }
+          },
+          "interpretation": "避免连续追问，尤其情绪低时。"
+        },
+        "G": {
+          "label": "太冷静、太客观，像客服",
+          "persona_scores": {
+            "moon_observer": 2,
+            "light_life_seeker": 1,
+            "gentle_reservoir": 1,
+            "inspiration_drifter": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "tone_preference": "生活化/有温度"
+            }
+          },
+          "interpretation": "回复需要有温度和生活感，避免报告感。"
+        }
+      }
+    },
+    "Q4": {
+      "title": "如果你不开心，我更适合先怎么陪你？",
+      "type": "single_choice",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "先别分析，陪我待一会儿",
+          "persona_scores": {
+            "cloud_rest_seeker": 3,
+            "silent_repairer": 2,
+            "gentle_reservoir": 2
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "recovery_need": "先陪伴"
+            },
+            "readiness_default": "emotional"
+          },
+          "interpretation": "默认先进入 companion_mode。"
+        },
+        "B": {
+          "label": "先帮我把感受说清楚",
+          "persona_scores": {
+            "moon_observer": 3,
+            "fog_organizer": 2,
+            "soft_fire_seed": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "recovery_need": "轻轻映照"
+            },
+            "response_mode": "reflection_mode"
+          },
+          "interpretation": "默认先映照感受，再考虑分析。"
+        },
+        "C": {
+          "label": "可以温柔地帮我分析",
+          "persona_scores": {
+            "order_seeker": 3,
+            "fog_organizer": 2,
+            "star_path_planner": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "recovery_need": "陪伴后分析"
+            },
+            "response_mode": "mixed_to_analysis"
+          },
+          "interpretation": "可以分析，但要保留温度和铺垫。"
+        },
+        "D": {
+          "label": "我更喜欢直接一点，别绕",
+          "persona_scores": {
+            "order_seeker": 2,
+            "tiny_light_actor": 2,
+            "hesitant_chooser": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "tone": "直接清醒"
+            },
+            "readiness_default": "rational"
+          },
+          "interpretation": "可以更直接，但仍避免刺痛式表达。"
+        },
+        "E": {
+          "label": "先问我一句要不要解决",
+          "persona_scores": {
+            "slow_warm_approacher": 2,
+            "moon_observer": 1,
+            "fog_organizer": 1
+          },
+          "profile_patch": {
+            "communication_preference": {
+              "need_choice": true
+            }
+          },
+          "interpretation": "每次切换到方案前先给用户选择权。"
+        },
+        "F": {
+          "label": "看情况，你先判断我是不是准备好了",
+          "persona_scores": {
+            "fog_organizer": 1,
+            "order_seeker": 1,
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "runtime_rule": "detect_readiness_first"
+          },
+          "interpretation": "运行时先识别 readiness_state，再决定回复模式。"
+        }
+      }
+    },
+    "Q5": {
+      "title": "最近你的生活，主要被哪些事情牵着走？",
+      "type": "multi_choice_max_4",
+      "scoring_importance": "medium",
+      "options": {
+        "A": {
+          "label": "工作/学习任务",
+          "persona_scores": {
+            "order_seeker": 2,
+            "fog_organizer": 1,
+            "cloud_rest_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "primary_life_domains": [
+                "工作/学习"
+              ]
+            }
+          }
+        },
+        "B": {
+          "label": "创作、设计、内容、表达",
+          "persona_scores": {
+            "inspiration_drifter": 3,
+            "light_life_seeker": 1,
+            "star_path_planner": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "work_learning_role": "创作设计内容型工作者"
+            }
+          }
+        },
+        "C": {
+          "label": "团队、沟通、管理责任",
+          "persona_scores": {
+            "gentle_reservoir": 2,
+            "warm_island_caregiver": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "work_learning_role": "管理者负责人/团队照护者"
+            }
+          }
+        },
+        "D": {
+          "label": "家庭、伴侣、孩子、父母",
+          "persona_scores": {
+            "warm_island_caregiver": 3,
+            "gentle_reservoir": 2,
+            "soft_boundary_keeper": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "primary_life_domains": [
+                "家庭/关系/照护"
+              ]
+            }
+          }
+        },
+        "E": {
+          "label": "宠物、照护、陪伴责任",
+          "persona_scores": {
+            "gentle_reservoir": 2,
+            "warm_island_caregiver": 2,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "care_role": "养宠人/照护者"
+            },
+            "pet_profile": {
+              "status": "inferred",
+              "confidence": "medium",
+              "confirmed_pet_owner": false,
+              "needs_confirmation": true
+            }
+          },
+          "important_note": "不能因为用户选择此项就确认其养宠，只能作为 inferred。"
+        },
+        "F": {
+          "label": "自己的情绪和状态",
+          "persona_scores": {
+            "moon_observer": 2,
+            "fog_organizer": 1,
+            "cloud_rest_seeker": 1,
+            "soft_fire_seed": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "self_management_role": "情绪整理者"
+            }
+          }
+        },
+        "G": {
+          "label": "花钱、选择、购物纠结",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "primary_life_domains": [
+                "消费选择"
+              ]
+            }
+          }
+        },
+        "H": {
+          "label": "转型、迷茫、方向感",
+          "persona_scores": {
+            "star_path_planner": 2,
+            "fog_organizer": 2,
+            "morning_restart": 1
+          },
+          "profile_patch": {
+            "current_state": {
+              "stability": "过渡期",
+              "key_pain": "方向迷茫"
+            }
+          }
+        }
+      }
+    },
+    "Q6": {
+      "title": "最近最消耗你的，比较像哪种拉扯？",
+      "type": "multi_choice_max_2",
+      "scoring_importance": "medium",
+      "options": {
+        "A": {
+          "label": "想变好，但真的没能量",
+          "persona_scores": {
+            "tiny_light_actor": 3,
+            "cloud_rest_seeker": 2,
+            "morning_restart": 2
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "理想自我 vs 现实能量"
+              ]
+            },
+            "action_barrier": {
+              "energy_level": "low"
+            }
+          }
+        },
+        "B": {
+          "label": "想松弛，但又怕自己落后",
+          "persona_scores": {
+            "light_life_seeker": 2,
+            "star_path_planner": 2,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "松弛愿望 vs 自律焦虑"
+              ]
+            }
+          }
+        },
+        "C": {
+          "label": "想照顾别人，但自己也很累",
+          "persona_scores": {
+            "gentle_reservoir": 3,
+            "warm_island_caregiver": 3
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "照护别人 vs 照顾自己"
+              ]
+            }
+          }
+        },
+        "D": {
+          "label": "想买点东西奖励自己，但又怕后悔",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "消费欲望 vs 理性控制"
+              ]
+            },
+            "decision_pattern": {
+              "fear_point": "后悔"
+            }
+          }
+        },
+        "E": {
+          "label": "想独立，但也很想被理解",
+          "persona_scores": {
+            "slow_warm_approacher": 2,
+            "moon_observer": 2,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "独立需求 vs 被理解需求"
+              ]
+            }
+          }
+        },
+        "F": {
+          "label": "不想社交，但又怕关系变远",
+          "persona_scores": {
+            "soft_boundary_keeper": 3,
+            "silent_repairer": 2,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "社交期待 vs 自我边界"
+              ]
+            }
+          }
+        },
+        "G": {
+          "label": "想做出成绩，但生活已经被挤压",
+          "persona_scores": {
+            "order_seeker": 2,
+            "cloud_rest_seeker": 2,
+            "star_path_planner": 1
+          },
+          "profile_patch": {
+            "life_role_profile": {
+              "role_conflict": [
+                "工作自我 vs 生活自我"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Q7": {
+      "title": "当你说“我不知道怎么办”时，通常是哪一种？",
+      "type": "single_choice",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "其实我只是太乱了，想先有人听我说",
+          "persona_scores": {
+            "fog_organizer": 3,
+            "cloud_rest_seeker": 2,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "readiness_default": "emotional",
+            "communication_preference": {
+              "recovery_need": "被陪伴"
+            }
+          }
+        },
+        "B": {
+          "label": "我想知道自己为什么这样",
+          "persona_scores": {
+            "moon_observer": 2,
+            "order_seeker": 2,
+            "fog_organizer": 1
+          },
+          "profile_patch": {
+            "readiness_default": "mixed_or_rational",
+            "communication_preference": {
+              "recovery_need": "分析原因"
+            }
+          }
+        },
+        "C": {
+          "label": "我需要有人帮我判断哪个更好",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "decision_style": "依赖确认型"
+            }
+          }
+        },
+        "D": {
+          "label": "我知道该做什么，但启动不了",
+          "persona_scores": {
+            "tiny_light_actor": 3,
+            "morning_restart": 2
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "barrier_type": "启动困难"
+            }
+          }
+        },
+        "E": {
+          "label": "我想直接知道下一步怎么做",
+          "persona_scores": {
+            "tiny_light_actor": 2,
+            "order_seeker": 2
+          },
+          "profile_patch": {
+            "readiness_default": "action_ready"
+          }
+        },
+        "F": {
+          "label": "我自己也不确定，需要你先判断",
+          "persona_scores": {
+            "fog_organizer": 2,
+            "slow_warm_approacher": 1,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "runtime_rule": "detect_readiness_first"
+          }
+        }
+      }
+    },
+    "Q8": {
+      "title": "做选择时，你最容易卡在哪里？",
+      "type": "multi_choice_max_2",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "信息太多，越看越乱",
+          "persona_scores": {
+            "fog_organizer": 2,
+            "hesitant_chooser": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "info_tolerance": "信息太多更乱"
+            }
+          }
+        },
+        "B": {
+          "label": "怕选错，怕后悔",
+          "persona_scores": {
+            "hesitant_chooser": 4,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "fear_point": "选错/后悔"
+            }
+          }
+        },
+        "C": {
+          "label": "总想找到最优解",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "order_seeker": 2
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "decision_style": "完美比较型"
+            }
+          }
+        },
+        "D": {
+          "label": "很容易被别人推荐带走",
+          "persona_scores": {
+            "hesitant_chooser": 2,
+            "moon_observer": 1,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "influence_source": [
+                "博主",
+                "朋友",
+                "评论"
+              ]
+            }
+          }
+        },
+        "E": {
+          "label": "当下喜欢就想买/做，之后又后悔",
+          "persona_scores": {
+            "hesitant_chooser": 2,
+            "light_life_seeker": 2,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "purchase_style": "情绪驱动",
+              "regret_pattern": "冲动后悔"
+            }
+          }
+        },
+        "F": {
+          "label": "其实我能判断，但需要被确认一下",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "decision_pattern": {
+              "decision_style": "确认需求型"
+            }
+          }
+        }
+      }
+    },
+    "Q9": {
+      "title": "你想改变一件事时，最容易卡在哪里？",
+      "type": "multi_choice_max_2",
+      "scoring_importance": "high",
+      "options": {
+        "A": {
+          "label": "一开始目标定太大",
+          "persona_scores": {
+            "tiny_light_actor": 2,
+            "star_path_planner": 1,
+            "morning_restart": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "fail_reason": "目标过大",
+              "ideal_action_size": "small"
+            }
+          }
+        },
+        "B": {
+          "label": "不知道第一步是什么",
+          "persona_scores": {
+            "fog_organizer": 3,
+            "tiny_light_actor": 2,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "fail_reason": "没有第一步",
+              "barrier_type": "unclear_start_point"
+            }
+          }
+        },
+        "C": {
+          "label": "太累了，没电",
+          "persona_scores": {
+            "cloud_rest_seeker": 3,
+            "tiny_light_actor": 2,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "energy_level": "low"
+            }
+          }
+        },
+        "D": {
+          "label": "容易三分钟热度",
+          "persona_scores": {
+            "inspiration_drifter": 2,
+            "tiny_light_actor": 2,
+            "morning_restart": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "barrier_type": "三分钟热度"
+            }
+          }
+        },
+        "E": {
+          "label": "怕做不好，所以干脆不开始",
+          "persona_scores": {
+            "tiny_light_actor": 2,
+            "soft_fire_seed": 2,
+            "moon_observer": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "barrier_type": "完美主义/害怕失败"
+            }
+          }
+        },
+        "F": {
+          "label": "很容易被手机、短视频打断",
+          "persona_scores": {
+            "cloud_rest_seeker": 1,
+            "inspiration_drifter": 1,
+            "tiny_light_actor": 1
+          },
+          "profile_patch": {
+            "action_barrier": {
+              "fail_reason": "被娱乐分心"
+            }
+          }
+        }
+      }
+    },
+    "Q10": {
+      "title": "你更向往哪种生活感？",
+      "type": "multi_choice_max_3",
+      "scoring_importance": "medium",
+      "options": {
+        "A": {
+          "label": "轻一点，不用太用力",
+          "persona_scores": {
+            "light_life_seeker": 3,
+            "cloud_rest_seeker": 1
+          },
+          "profile_patch": {
+            "aesthetic_value": {
+              "life_aspiration": "轻盈"
+            }
+          }
+        },
+        "B": {
+          "label": "有秩序，心里更稳",
+          "persona_scores": {
+            "order_seeker": 3,
+            "fog_organizer": 1
+          },
+          "profile_patch": {
+            "aesthetic_value": {
+              "life_aspiration": "有秩序/安心"
+            }
+          }
+        },
+        "C": {
+          "label": "更松弛，不总是紧绷",
+          "persona_scores": {
+            "light_life_seeker": 2,
+            "cloud_rest_seeker": 1,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "aesthetic_value": {
+              "life_aspiration": "松弛"
+            }
+          }
+        },
+        "D": {
+          "label": "更有行动力，不总是卡住",
+          "persona_scores": {
+            "tiny_light_actor": 3,
+            "morning_restart": 2
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "desired_state": "更有行动力"
+            }
+          }
+        },
+        "E": {
+          "label": "更会选择，少后悔",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "growth_direction": "消费判断/决策"
+            }
+          }
+        },
+        "F": {
+          "label": "更像自己，而不是一直迎合别人",
+          "persona_scores": {
+            "soft_boundary_keeper": 3,
+            "slow_warm_approacher": 1,
+            "star_path_planner": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "growth_direction": "表达/边界"
+            }
+          }
+        },
+        "G": {
+          "label": "生活更有审美和质感",
+          "persona_scores": {
+            "light_life_seeker": 3,
+            "inspiration_drifter": 2
+          },
+          "profile_patch": {
+            "aesthetic_value": {
+              "style_keywords": [
+                "审美",
+                "生活感"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Q11": {
+      "title": "如果我长期陪你，你最希望我帮你靠近哪种状态？",
+      "type": "single_choice",
+      "scoring_importance": "medium",
+      "options": {
+        "A": {
+          "label": "少一点内耗",
+          "persona_scores": {
+            "fog_organizer": 2,
+            "moon_observer": 2,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "desired_state": "更少内耗"
+            }
+          }
+        },
+        "B": {
+          "label": "睡前更平静",
+          "persona_scores": {
+            "cloud_rest_seeker": 2,
+            "moon_observer": 2,
+            "silent_repairer": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "success_signal": "睡前更平静"
+            }
+          }
+        },
+        "C": {
+          "label": "做决定更轻松",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "success_signal": "选择更快"
+            }
+          }
+        },
+        "D": {
+          "label": "情绪来的时候不那么孤单",
+          "persona_scores": {
+            "moon_observer": 2,
+            "gentle_reservoir": 1,
+            "slow_warm_approacher": 1,
+            "cloud_rest_seeker": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "long_term_support": "更被陪伴"
+            }
+          }
+        },
+        "E": {
+          "label": "想做的事能慢慢开始",
+          "persona_scores": {
+            "tiny_light_actor": 3,
+            "morning_restart": 2
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "growth_direction": "行动力"
+            }
+          }
+        },
+        "F": {
+          "label": "买东西更清醒",
+          "persona_scores": {
+            "hesitant_chooser": 3,
+            "light_life_seeker": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "growth_direction": "消费判断"
+            }
+          }
+        },
+        "G": {
+          "label": "更敢表达自己的感受",
+          "persona_scores": {
+            "soft_boundary_keeper": 3,
+            "moon_observer": 1,
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "ideal_self": {
+              "growth_direction": "表达/关系边界"
+            }
+          }
+        }
+      }
+    },
+    "Q12": {
+      "title": "你愿意我主动来找你吗？",
+      "type": "single_choice",
+      "scoring_importance": "low",
+      "options": {
+        "A": {
+          "label": "可以，晚上轻轻问我一句就好",
+          "persona_scores": {
+            "moon_observer": 1,
+            "fog_organizer": 1,
+            "gentle_reservoir": 1
+          },
+          "profile_patch": {
+            "push_preference": {
+              "push_tolerance": "low",
+              "push_time": "晚间",
+              "push_enabled": true
+            }
+          }
+        },
+        "B": {
+          "label": "可以，但不要太频繁",
+          "persona_scores": {
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "push_preference": {
+              "push_tolerance": "medium_low",
+              "push_enabled": true
+            }
+          }
+        },
+        "C": {
+          "label": "只有我提过重要事情时，你再跟进",
+          "persona_scores": {
+            "slow_warm_approacher": 1,
+            "order_seeker": 1
+          },
+          "profile_patch": {
+            "push_preference": {
+              "push_type": "event_followup_only",
+              "push_enabled": true
+            }
+          }
+        },
+        "D": {
+          "label": "我不太喜欢主动提醒",
+          "persona_scores": {
+            "silent_repairer": 1,
+            "slow_warm_approacher": 1
+          },
+          "profile_patch": {
+            "push_preference": {
+              "push_tolerance": "low_or_off"
+            }
+          }
+        },
+        "E": {
+          "label": "以后再说，先别主动找我",
+          "persona_scores": {
+            "slow_warm_approacher": 2,
+            "silent_repairer": 1
+          },
+          "profile_patch": {
+            "push_preference": {
+              "push_enabled": false,
+              "push_tolerance": "off"
+            }
+          }
+        }
+      }
+    },
+    "Q13": {
+      "title": "最近最让你消耗的一件事是什么？",
+      "type": "open_text_optional",
+      "scoring_importance": "semantic_high_if_answered",
+      "extraction_rules": {
+        "profile_fields": [
+          "current_state.key_pain",
+          "emotion_pattern.triggers",
+          "life_role_profile.current_role_pressure",
+          "runtime_personalization_seed"
+        ],
+        "persona_semantic_keywords": {
+          "fog_organizer": {
+            "keywords": [
+              "乱",
+              "事情太多",
+              "不知道先做什么",
+              "脑子炸",
+              "理不清"
+            ],
+            "score": 3
+          },
+          "moon_observer": {
+            "keywords": [
+              "敏感",
+              "想太多",
+              "对方语气",
+              "关系",
+              "不舒服"
+            ],
+            "score": 3
+          },
+          "gentle_reservoir": {
+            "keywords": [
+              "撑着",
+              "照顾",
+              "大家都靠我",
+              "不能停",
+              "责任"
+            ],
+            "score": 3
+          },
+          "order_seeker": {
+            "keywords": [
+              "没有计划",
+              "失控",
+              "需要结构",
+              "想理顺",
+              "方向"
+            ],
+            "score": 3
+          },
+          "hesitant_chooser": {
+            "keywords": [
+              "纠结",
+              "选错",
+              "后悔",
+              "不知道买不买",
+              "选择"
+            ],
+            "score": 3
+          },
+          "inspiration_drifter": {
+            "keywords": [
+              "想法很多",
+              "灵感",
+              "做不完",
+              "方向太多",
+              "创作"
+            ],
+            "score": 3
+          },
+          "cloud_rest_seeker": {
+            "keywords": [
+              "好累",
+              "没力气",
+              "不想动",
+              "想躲",
+              "什么都不想做"
+            ],
+            "score": 3
+          },
+          "tiny_light_actor": {
+            "keywords": [
+              "启动不了",
+              "开始不了",
+              "知道但做不到",
+              "第一步",
+              "拖延"
+            ],
+            "score": 3
+          },
+          "soft_boundary_keeper": {
+            "keywords": [
+              "拒绝",
+              "不好意思",
+              "怕别人不高兴",
+              "怎么说",
+              "边界"
+            ],
+            "score": 3
+          },
+          "star_path_planner": {
+            "keywords": [
+              "未来",
+              "长期",
+              "目标",
+              "转型",
+              "人生方向"
+            ],
+            "score": 3
+          }
+        },
+        "safety_rules": [
+          "Open text may contain sensitive emotional content. Do not make diagnosis.",
+          "If severe distress appears, use safety response logic outside this config.",
+          "Do not treat inferred facts as confirmed."
+        ]
+      }
+    },
+    "Q14": {
+      "title": "如果我以后陪你，你最希望我记住你哪一点？",
+      "type": "open_text_optional",
+      "scoring_importance": "semantic_high_if_answered",
+      "extraction_rules": {
+        "profile_fields": [
+          "communication_preference",
+          "ideal_self.no_go_zone",
+          "user_voice_profile",
+          "long_term_memory"
+        ],
+        "preference_semantic_keywords": {
+          "avoid_analysis_first": {
+            "keywords": [
+              "别一上来分析",
+              "先陪我",
+              "不要讲道理"
+            ],
+            "profile_patch": {
+              "communication_preference": {
+                "dislike_phrases": [
+                  "过早分析"
+                ],
+                "readiness_default": "emotional"
+              }
+            },
+            "persona_scores": {
+              "cloud_rest_seeker": 2,
+              "gentle_reservoir": 1
+            }
+          },
+          "avoid_definition": {
+            "keywords": [
+              "不要定义我",
+              "别说我就是",
+              "不要给我贴标签"
+            ],
+            "profile_patch": {
+              "communication_preference": {
+                "dislike_phrases": [
+                  "直接下定义"
+                ]
+              }
+            },
+            "persona_scores": {
+              "slow_warm_approacher": 2,
+              "moon_observer": 1
+            }
+          },
+          "low_questioning": {
+            "keywords": [
+              "别一直问",
+              "不要追问",
+              "我不想解释太多"
+            ],
+            "profile_patch": {
+              "communication_preference": {
+                "question_tolerance": "low"
+              }
+            },
+            "persona_scores": {
+              "silent_repairer": 3,
+              "slow_warm_approacher": 2
+            }
+          },
+          "need_directness": {
+            "keywords": [
+              "直接一点",
+              "说结论",
+              "别绕",
+              "给我下一步"
+            ],
+            "profile_patch": {
+              "communication_preference": {
+                "tone": "direct_clear"
+              }
+            },
+            "persona_scores": {
+              "order_seeker": 2,
+              "tiny_light_actor": 2
+            }
+          },
+          "need_warmth": {
+            "keywords": [
+              "温柔一点",
+              "像朋友",
+              "不要像客服",
+              "有温度"
+            ],
+            "profile_patch": {
+              "communication_preference": {
+                "tone_preference": "warm_life_like"
+              }
+            },
+            "persona_scores": {
+              "moon_observer": 2,
+              "gentle_reservoir": 1
+            }
+          },
+          "boundary_sensitive": {
+            "keywords": [
+              "别太亲密",
+              "慢慢来",
+              "不要假装懂我",
+              "保持边界"
+            ],
+            "profile_patch": {
+              "ideal_self": {
+                "no_go_zone": [
+                  "forced_intimacy",
+                  "overinterpretation"
+                ]
+              }
+            },
+            "persona_scores": {
+              "slow_warm_approacher": 3
+            }
+          }
+        },
+        "memory_rules": [
+          "If user provides a clear preference, store as user_voice_profile with status confirmed.",
+          "If user provides sensitive personal data, only store if necessary and user explicitly wants it remembered.",
+          "User can edit or delete this memory later."
+        ]
+      }
+    }
+  },
+  "persona_combination_rules": {
+    "recommended_combinations": [
+      {
+        "primary": "fog_organizer",
+        "secondary": "moon_observer",
+        "meaning": "用户既混乱又敏感，需要先映照，再轻整理。",
+        "result_copy_hint": "你可能最近脑子里装了很多东西，也很容易捕捉到细节里的变化。"
+      },
+      {
+        "primary": "cloud_rest_seeker",
+        "secondary": "tiny_light_actor",
+        "meaning": "用户很累，但内心仍有一点点想开始。",
+        "result_copy_hint": "现在不适合大计划，只适合小到不会压垮你的下一步。"
+      },
+      {
+        "primary": "gentle_reservoir",
+        "secondary": "warm_island_caregiver",
+        "meaning": "用户长期照顾别人，责任压力高。",
+        "result_copy_hint": "你很会接住别人，但你自己也需要靠岸。"
+      },
+      {
+        "primary": "hesitant_chooser",
+        "secondary": "light_life_seeker",
+        "meaning": "用户在消费/选择里需要判断，也重视生活感和审美。",
+        "result_copy_hint": "我会帮你找回真实偏好，而不是继续堆更多选项。"
+      },
+      {
+        "primary": "inspiration_drifter",
+        "secondary": "order_seeker",
+        "meaning": "用户想法丰富，但需要轻结构。",
+        "result_copy_hint": "我会先保护你的灵感，再帮你把其中一个方向轻轻落地。"
+      },
+      {
+        "primary": "soft_boundary_keeper",
+        "secondary": "moon_observer",
+        "meaning": "用户在人际关系中敏感，同时需要边界表达。",
+        "result_copy_hint": "我会先承认你的为难，再帮你找到不伤人的表达。"
+      },
+      {
+        "primary": "star_path_planner",
+        "secondary": "morning_restart",
+        "meaning": "用户有长期方向，也正在低压重启。",
+        "result_copy_hint": "我们不急着跑起来，只确认每一步有没有更靠近你想成为的人。"
+      },
+      {
+        "primary": "slow_warm_approacher",
+        "secondary": "silent_repairer",
+        "meaning": "用户需要边界、安全感和安静陪伴。",
+        "result_copy_hint": "我不会太快靠近你，也不会逼你说很多。"
+      }
+    ],
+    "conflict_rules": [
+      {
+        "conflict": "cloud_rest_seeker vs order_seeker",
+        "description": "用户既表示极低能量，又表示想要结构分析。",
+        "resolution": "优先判断 readiness_state。如果当前 emotional，先休息；如果 rational，再轻结构。"
+      },
+      {
+        "conflict": "silent_repairer vs star_path_planner",
+        "description": "用户不想表达，但又有长期规划需求。",
+        "resolution": "结果页可展示长期方向，但聊天时减少追问。"
+      },
+      {
+        "conflict": "slow_warm_approacher vs gentle_reservoir",
+        "description": "用户需要边界，但也希望被照顾。",
+        "resolution": "用尊重边界的温柔，不使用过度亲密语气。"
+      }
+    ]
+  },
+  "scoring_pseudo_code": "function calculatePersonaResult(answers):\n    scores = initializeAllPersonaScoresToZero()\n    profilePatch = initializeEmptyProfilePatch()\n    evidence = []\n\n    for each answer in answers:\n        questionConfig = questions[answer.question_id]\n\n        if questionConfig.type contains \"choice\":\n            selectedOptions = normalizeSelectedOptions(answer)\n            for optionId in selectedOptions:\n                optionConfig = questionConfig.options[optionId]\n                addPersonaScores(scores, optionConfig.persona_scores)\n                mergeProfilePatch(profilePatch, optionConfig.profile_patch)\n                evidence.append({\n                    question_id: answer.question_id,\n                    option_id: optionId,\n                    label: optionConfig.label,\n                    reason: optionConfig.interpretation,\n                    added_scores: optionConfig.persona_scores\n                })\n\n        if questionConfig.type == \"open_text_optional\" and answer.text is not empty:\n            semanticResult = analyzeOpenText(answer.text, questionConfig.extraction_rules)\n            addPersonaScores(scores, semanticResult.persona_scores)\n            mergeProfilePatch(profilePatch, semanticResult.profile_patch)\n            evidence.append(semanticResult.evidence)\n\n    sortedPersonas = sortScoresDescending(scores)\n    primary = sortedPersonas[0]\n    secondary = maybeSelectSecondary(sortedPersonas, secondary_persona_rules)\n    confidence = calculateConfidence(primary, secondary, answers, confidence_rules)\n\n    return {\n        persona_result: {\n            primary_persona_id: primary.id,\n            primary_persona_name: persona_ids[primary.id],\n            secondary_persona_id: secondary?.id || null,\n            secondary_persona_name: secondary ? persona_ids[secondary.id] : null,\n            confidence: confidence,\n            status: \"inferred\",\n            evidence: evidence,\n            generated_at: now(),\n            user_visible: true\n        },\n        profile_patch: profilePatch,\n        result_page: renderResultPage(primary, secondary, confidence, profilePatch)\n    }\n",
+  "result_page_generation_rules": {
+    "headline_template": "你现在更像「{primary_persona_name}」。",
+    "secondary_template": "你身上也有一点「{secondary_persona_name}」的影子。",
+    "required_sections": [
+      "persona_name",
+      "one_sentence_explanation",
+      "how_i_should_support_you",
+      "how_i_should_not_talk_to_you",
+      "current_profile_summary",
+      "editable_notice"
+    ],
+    "tone_rules": [
+      "Use soft and low-pressure wording.",
+      "Do not say '你属于某种人格'.",
+      "Do not say '系统判断你是'.",
+      "Use '你现在更像' instead of '你是'.",
+      "Use '这只是第一版' instead of '这是你的最终画像'."
+    ],
+    "editable_notice_options": [
+      "这只是第一版，你之后随时可以改。",
+      "如果这个名字不太像你，我们可以换一种说法。",
+      "这不是为了定义你，而是为了让我以后少一点误解你。"
+    ]
+  },
+  "profile_summary_generation_rules": {
+    "include_dimensions": [
+      "current_state",
+      "emotion_pattern",
+      "communication_preference",
+      "action_barrier",
+      "ideal_self",
+      "push_preference"
+    ],
+    "max_bullets": 6,
+    "avoid_overexposure": [
+      "Do not expose raw sensitive inferred fields unless user explicitly asks.",
+      "Do not show pet_profile as confirmed unless confirmed_pet_owner is true.",
+      "Do not show psychological-sounding labels."
+    ]
+  },
+  "example_results": {
+    "example_1": {
+      "answers": {
+        "Q1": "B",
+        "Q2": [
+          "A",
+          "C"
+        ],
+        "Q3": [
+          "C",
+          "D",
+          "E"
+        ],
+        "Q4": "B",
+        "Q5": [
+          "A",
+          "F",
+          "H"
+        ],
+        "Q6": [
+          "A"
+        ],
+        "Q7": "A",
+        "Q8": [
+          "A",
+          "B"
+        ],
+        "Q9": [
+          "B"
+        ],
+        "Q10": [
+          "B",
+          "D"
+        ],
+        "Q11": "A",
+        "Q12": "A"
+      },
+      "expected_primary_persona": "fog_organizer",
+      "expected_secondary_persona": "hesitant_chooser",
+      "expected_confidence": "high",
+      "result_summary": "用户混乱感强，选择压力明显，需要先整理，再降低决策压力。"
+    },
+    "example_2": {
+      "answers": {
+        "Q1": "A",
+        "Q2": [
+          "D",
+          "F"
+        ],
+        "Q3": [
+          "C",
+          "F"
+        ],
+        "Q4": "A",
+        "Q5": [
+          "C",
+          "D"
+        ],
+        "Q6": [
+          "C"
+        ],
+        "Q7": "A",
+        "Q8": [
+          "F"
+        ],
+        "Q9": [
+          "C"
+        ],
+        "Q10": [
+          "C"
+        ],
+        "Q11": "D",
+        "Q12": "B"
+      },
+      "expected_primary_persona": "gentle_reservoir",
+      "expected_secondary_persona": "cloud_rest_seeker",
+      "expected_confidence": "high",
+      "result_summary": "用户长期承担和消耗，需要先被接住，再恢复能量。"
+    },
+    "example_3": {
+      "answers": {
+        "Q1": "E",
+        "Q2": [
+          "E"
+        ],
+        "Q3": [
+          "E"
+        ],
+        "Q4": "D",
+        "Q5": [
+          "A",
+          "B"
+        ],
+        "Q6": [
+          "A"
+        ],
+        "Q7": "D",
+        "Q8": [
+          "C"
+        ],
+        "Q9": [
+          "A",
+          "B"
+        ],
+        "Q10": [
+          "D"
+        ],
+        "Q11": "E",
+        "Q12": "C"
+      },
+      "expected_primary_persona": "tiny_light_actor",
+      "expected_secondary_persona": "morning_restart",
+      "expected_confidence": "high",
+      "result_summary": "用户有行动愿望但启动困难，需要极小下一步和轻量重启。"
+    }
+  },
+  "product_notes": {
+    "why_this_file_exists": "The questionnaire collects soft signals about the user's current state, communication preference, life role, decision pattern, action barrier, life aspiration, and active message boundary. This file turns those signals into a first companion persona result.\n",
+    "what_not_to_do": [
+      "Do not present the result as a psychological diagnosis.",
+      "Do not tell the user they are a fixed type.",
+      "Do not use questionnaire results to force intimacy.",
+      "Do not ask more profile questions when user is emotionally overwhelmed.",
+      "Do not confirm inferred facts without user confirmation."
+    ],
+    "recommended_mvp_flow": [
+      {
+        "step": 1,
+        "text": "User completes Q1-Q12. Q13-Q14 are optional."
+      },
+      {
+        "step": 2,
+        "text": "System calculates persona scores and profile patch."
+      },
+      {
+        "step": 3,
+        "text": "System renders first companion guide result page."
+      },
+      {
+        "step": 4,
+        "text": "User can save, edit, reject, hide, or skip result."
+      },
+      {
+        "step": 5,
+        "text": "During later chats, persona is used quietly to guide tone and response mode."
+      }
+    ]
+  }
+}

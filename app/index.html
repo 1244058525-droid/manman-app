@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>慢慢｜AI 陪伴 App</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css?v=modern-purple-1" />
+  </head>
+  <body class="intro-active">
+    <section class="intro-onboarding" id="introOnboarding" aria-label="慢慢首次使用介绍">
+      <article class="intro-slide active" data-intro-slide="0">
+        <div class="intro-content intro-logo-only">
+          <img src="./assets/manman-logo.png" alt="慢慢" class="intro-mark" />
+        </div>
+      </article>
+
+      <article class="intro-slide" data-intro-slide="1">
+        <div class="intro-content intro-text-only">
+          <p>
+            <span>慢慢是一款会逐渐认识你的AI陪伴产品</span>
+            <span>它不急着给你答案</span>
+            <span>而是先理解你的状态，再用适合你的方式</span>
+            <span>陪你聊天、整理情绪、靠近下一步</span>
+          </p>
+        </div>
+      </article>
+
+      <div class="intro-progress" aria-hidden="true">
+        <span class="active"></span>
+        <span></span>
+      </div>
+    </section>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="应用导航">
+        <div class="brand-row">
+          <img src="./assets/manman-logo.png" alt="慢慢 logo" class="brand-logo" />
+          <div>
+            <div class="brand-name">慢慢</div>
+            <div class="brand-caption">AI 陪伴</div>
+          </div>
+        </div>
+
+        <button class="new-chat-button" data-view="home">开始</button>
+
+        <nav class="nav-list">
+          <button class="nav-item" data-view="chat">
+            <span>聊天</span>
+          </button>
+          <button class="nav-item" data-view="today">
+            <span>今日</span>
+          </button>
+          <button class="nav-item" data-view="profile">
+            <span>画像</span>
+          </button>
+          <button class="nav-item" data-view="settings">
+            <span>我的</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="compact-button" data-view="settings">设置与隐私</button>
+        </div>
+      </aside>
+      <button class="drawer-backdrop" aria-label="关闭导航"></button>
+
+      <main class="main-area">
+        <header class="topbar">
+          <button class="menu-button" id="drawerToggle" aria-label="展开导航" aria-expanded="false">☰</button>
+          <div class="topbar-title" id="topbarTitle">慢慢</div>
+          <img src="./assets/manman-logo.png" alt="" class="corner-logo" />
+        </header>
+
+        <section class="view view-home active" data-panel="home">
+          <div class="center-column welcome-panel">
+            <div class="welcome-card">
+              <div class="welcome-brand">
+                <img src="./assets/manman-logo.png" alt="" class="welcome-logo" />
+                <span>慢慢</span>
+              </div>
+              <div class="page-kicker">AI 陪伴 App</div>
+              <h1>我会先了解你，再陪你说话。</h1>
+              <p class="intro">
+                不是测试你是什么样的人，只是帮我找到更适合陪你的方式。你可以保存、修改，也可以随时删除自己的画像。
+              </p>
+              <div class="feature-strip" aria-label="核心能力">
+                <div><strong>低压陪伴</strong><span>先接住你，不急着给答案</span></div>
+                <div><strong>情绪梳理</strong><span>把堵住的地方慢慢放出来</span></div>
+                <div><strong>个性化回复</strong><span>按你的状态调整陪伴方式</span></div>
+              </div>
+              <div class="home-choice-list" role="group" aria-label="开始方式">
+                <button class="choice-button primary-choice selected" data-view="questionnaire">开始了解我</button>
+                <button class="choice-button" data-view="chat">先直接聊天</button>
+              </div>
+              <p class="privacy-note">这不是诊断，也不是给你贴标签。第一版画像只是起点。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-panel="questionnaire">
+          <div class="content-column">
+            <div class="questionnaire-heading" id="questionnaireHeading">
+              <div class="page-kicker" style="--line-index: 0">约 3 分钟</div>
+              <h2 style="--line-index: 1">先认识你一点</h2>
+              <p class="muted" style="--line-index: 2">
+              不用选最准确的，选第一眼最像的就好。它不是心理诊断，只是让我以后少一点误解你。
+              </p>
+            </div>
+
+            <div class="questionnaire-card">
+              <div class="progress-meta" id="questionProgressText">第 1 题 / 共 14 题</div>
+              <div class="progress-track" id="questionnaireProgress" style="--line-index: 3">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+              <form class="questionnaire" id="questionnaireForm"></form>
+            </div>
+
+            <div class="form-actions questionnaire-global-actions">
+              <button class="secondary-button" type="button" id="skipToChat">先直接聊天</button>
+              <button class="primary-button" type="button" id="generateResult">生成我的陪伴说明</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-panel="result">
+          <div class="content-column narrow result-content" id="resultContent">
+            <div class="page-kicker result-line" style="--line-index: 0">我的陪伴说明</div>
+            <h2 class="result-line" style="--line-index: 1">你现在更像「雾中整理者」</h2>
+            <p class="muted result-line" style="--line-index: 2">
+              这不是一个固定标签，也不是在定义你。它只是我对你当前状态的第一版理解，之后随时可以改。
+            </p>
+
+            <div class="plain-section result-line" style="--line-index: 3">
+              <h3>我现在这样理解你</h3>
+              <p>
+                你可能不是不想变好，而是最近脑子里装了太多事情。你需要的不是马上被分析，
+                而是先有一个地方把混乱放下来。
+              </p>
+            </div>
+
+            <div class="plain-section result-line" style="--line-index: 4">
+              <h3>我以后会这样陪你</h3>
+              <ul>
+                <li>你情绪很满的时候，我会先接住，不急着给建议。</li>
+                <li>你开始想整理原因时，我会轻轻帮你映照。</li>
+                <li>你准备行动时，我只给一个很小、能做到的下一步。</li>
+              </ul>
+            </div>
+
+            <div class="plain-section result-line" style="--line-index: 5">
+              <h3>我会尽量避免</h3>
+              <ul>
+                <li>直接说“你应该……”或者“你的问题是……”。</li>
+                <li>把你固定成某一种人格。</li>
+                <li>在你很累的时候催你立刻变好。</li>
+              </ul>
+            </div>
+
+            <div class="action-row result-line" style="--line-index: 6">
+              <button class="primary-button" id="resultStartButton" type="button">保存并开始使用</button>
+              <button class="secondary-button" id="resultSkipButton" type="button">先跳过</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-panel="chat">
+          <div class="chat-layout">
+            <div class="chat-status-bar">
+              <div>
+                <div class="chat-name">慢慢</div>
+                <div class="chat-status" id="chatModeLabel">当前模式：陪伴中</div>
+              </div>
+              <button class="text-link-button" type="button" data-view="profile">画像</button>
+            </div>
+            <div class="chat-slogan" id="chatSlogan">
+              <span>你可以从很小的一句话开始。</span>
+              <small>“我今天有点撑不住。”</small>
+              <small>“我不知道为什么很烦。”</small>
+              <small>“我想把一件事理清楚。”</small>
+            </div>
+            <div class="chat-thread" id="chatThread">
+            </div>
+
+            <div class="composer-wrap">
+              <div class="quick-mode-row" aria-label="快捷模式">
+                <button type="button" data-quick-message="我今天有点累，陪我待一会儿">陪我待一会儿</button>
+                <button type="button" data-quick-message="我脑子很乱，帮我理清楚">帮我理清楚</button>
+                <button type="button" data-quick-message="我想做决定，但卡住了">帮我做决定</button>
+                <button type="button" data-quick-message="给我一个现在能做的小行动">给我行动建议</button>
+              </div>
+              <form class="composer" id="chatForm">
+                <textarea id="chatInput" rows="1" placeholder="把现在想说的话放到这里"></textarea>
+                <button class="send-button" type="submit" aria-label="发送">↑</button>
+              </form>
+              <p class="composer-note">慢慢不是心理诊断工具。它会陪你整理，但重要风险请及时寻求现实支持。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-panel="today">
+          <div class="content-column narrow">
+            <div class="page-kicker">今日</div>
+            <h2>今天感觉怎么样？</h2>
+            <div class="mood-grid" id="todayMoodGrid">
+              <button type="button" data-mood="还好">还好</button>
+              <button type="button" data-mood="有点累">有点累</button>
+              <button type="button" data-mood="很乱">很乱</button>
+              <button type="button" data-mood="想逃避">想逃避</button>
+              <button type="button" data-mood="想努力一下">想努力一下</button>
+            </div>
+            <div class="plain-section today-companion">
+              <h3>今日陪伴</h3>
+              <p id="todayCompanionText">你不用把今天过得很漂亮。先把自己放稳一点，就已经算是在往前了。</p>
+            </div>
+            <div class="plain-section">
+              <h3>继续上次</h3>
+              <p id="continueTopicText">还没有未结束的话题。你可以从一句很小的话开始。</p>
+              <button class="secondary-button" type="button" data-view="chat">回到聊天</button>
+            </div>
+            <label class="journal-box">
+              <span>今天发生了什么？</span>
+              <textarea id="todayJournal" rows="4" placeholder="只写关键词也可以"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="view" data-panel="profile">
+          <div class="content-column narrow">
+            <div class="page-kicker">画像</div>
+            <h2>我的陪伴画像</h2>
+            <div class="profile-summary-card" id="profileSummaryCard"></div>
+            <div class="plain-section">
+              <h3>AI 对我的理解</h3>
+              <div class="profile-field-list" id="profileFieldList"></div>
+            </div>
+            <div class="plain-section">
+              <h3>AI 最近学到的</h3>
+              <ul id="learnedList">
+                <li>你压力大时，更适合先被接住，再进入分析或行动。</li>
+              </ul>
+            </div>
+            <div class="plain-section">
+              <h3>管理记忆</h3>
+              <div class="form-actions left-actions">
+                <button class="secondary-button" type="button" id="editProfileButton">修改</button>
+                <button class="secondary-button" type="button" id="pauseMemoryButton">暂停记忆</button>
+                <button class="danger-button" type="button" id="deleteProfileButton">删除画像</button>
+              </div>
+              <p class="admin-status" id="profileStatus"></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-panel="settings">
+          <div class="content-column narrow">
+            <div class="page-kicker">我的</div>
+            <h2>设置与隐私</h2>
+            <div class="settings-list">
+              <button type="button" data-view="profile"><span>画像管理</span><strong>查看 / 修改 / 删除</strong></button>
+              <button type="button" id="exportDataButton"><span>数据导出</span><strong>生成本地 JSON</strong></button>
+              <button type="button" id="deleteAllDataButton"><span>删除全部数据</span><strong>清空本地演示数据</strong></button>
+            </div>
+            <div class="plain-section">
+              <h3>AI 回复偏好</h3>
+              <div class="preference-grid">
+                <label><span>回复长度</span><select id="replyLengthSelect"><option>简短</option><option selected>正常</option><option>详细</option></select></label>
+                <label><span>回复语气</span><select id="replyToneSelect"><option selected>温柔</option><option>直接</option><option>理性</option><option>轻松</option></select></label>
+              </div>
+            </div>
+            <div class="plain-section">
+              <h3>危机提示</h3>
+              <p>慢慢不是医疗或心理诊断工具。如果你正处在现实危险里，请优先联系身边可信的人或当地紧急支持。</p>
+            </div>
+            <details class="admin-details">
+              <summary>模型设置</summary>
+            <form class="admin-form" id="modelConfigForm">
+              <label>
+                <span>模型服务</span>
+                <select id="modelProvider">
+                  <option value="local">本地规则</option>
+                  <option value="openai">OpenAI 兼容接口</option>
+                  <option value="mimo">MiMo 接口</option>
+                  <option value="openrouter">OpenRouter</option>
+                </select>
+              </label>
+              <label>
+                <span>对话模式</span>
+                <select id="conversationMode">
+                  <option value="companion">陪伴模式：先接住、再展开</option>
+                  <option value="functional">功能模式：先识别、再处理</option>
+                </select>
+              </label>
+              <label>
+                <span>模型名称</span>
+                <input id="modelName" placeholder="local-runtime-mock 或 gpt-4.1-mini" />
+              </label>
+              <label>
+                <span>接口地址</span>
+                <input id="modelEndpoint" placeholder="https://api.openai.com/v1/chat/completions" />
+              </label>
+              <label>
+                <span>API Key 环境变量名</span>
+                <input id="modelApiKeyEnv" placeholder="OPENAI_API_KEY" />
+              </label>
+              <div class="admin-grid">
+                <label>
+                  <span>温度</span>
+                  <input id="modelTemperature" type="number" min="0" max="2" step="0.1" />
+                </label>
+                <label>
+                  <span>最大字数</span>
+                  <input id="modelMaxTokens" type="number" min="100" max="4000" step="50" />
+                </label>
+              </div>
+              <label class="toggle-row">
+                <input id="modelUseReal" type="checkbox" />
+                <span>启用真实模型接口</span>
+              </label>
+              <label>
+                <span>内置回复规则摘要</span>
+                <textarea id="modelRuleSummary" rows="5"></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-button" type="submit">保存配置</button>
+                <button class="secondary-button" type="button" id="modelTestButton">测试模型</button>
+              </div>
+              <p class="admin-status" id="modelConfigStatus"></p>
+            </form>
+
+            <div class="plain-section">
+              <h3>Remote Config 状态</h3>
+              <p id="remoteConfigStatus">正在读取配置状态...</p>
+              <div class="form-actions">
+                <button class="secondary-button" type="button" id="remoteConfigPreviewButton">查看当前配置</button>
+              </div>
+              <pre class="config-preview" id="remoteConfigPreview"></pre>
+            </div>
+
+            <div class="plain-section">
+              <h3>主 slogan</h3>
+              <p>慢慢说，我会慢慢懂你。</p>
+            </div>
+            <div class="plain-section">
+              <h3>副 slogan</h3>
+              <p>一个越来越懂你的 AI 陪伴。</p>
+            </div>
+            <div class="plain-section">
+              <h3>官网 / App Store 简介</h3>
+              <p>
+                慢慢是一款会逐渐认识你的 AI 陪伴产品。它不急着给你答案，
+                而是先理解你的状态，再用适合你的方式陪你聊天、整理情绪、靠近下一步。
+              </p>
+            </div>
+            <div class="plain-section">
+              <h3>更情绪化的介绍</h3>
+              <p>
+                有些时候，你不需要马上被分析，也不需要立刻变好。
+                你只是需要一个地方，慢慢把话说出来。慢慢会陪你听见自己，也慢慢学会怎么陪你。
+              </p>
+            </div>
+            <div class="form-actions">
+              <button class="secondary-button" type="button" id="resetOnboardingButton">重新做一次问卷</button>
+            </div>
+            </details>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-tabs" aria-label="底部导航">
+        <button class="bottom-tab active" data-view="chat" type="button">聊天</button>
+        <button class="bottom-tab" data-view="today" type="button">今日</button>
+        <button class="bottom-tab" data-view="profile" type="button">画像</button>
+        <button class="bottom-tab" data-view="settings" type="button">我的</button>
+      </nav>
+    </div>
+
+    <script type="module" src="./remote-config.js?v=modern-purple-1"></script>
+    <script src="./app.js?v=modern-purple-1"></script>
+  </body>
+</html>

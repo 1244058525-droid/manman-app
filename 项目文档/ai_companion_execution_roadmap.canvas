@@ -1,0 +1,23 @@
+{
+	"nodes":[
+		{"id":"north-star","type":"text","text":"# 01 定义北极星\n\n**核心命题**\n不是更聪明的 AI，而是更懂我的 AI\n\n**核心价值链**\n深度画像 -> 个性回复 -> 主动陪伴 -> 小行动\n\n**目标**\n让用户感到：它真的认识我","x":0,"y":0,"width":460,"height":290,"color":"1"},
+		{"id":"persona-core","type":"text","text":"# 02 搭建画像底盘\n\n- 设计 7 层用户画像维度\n- 建立结构化字段 + 标签体系\n- 设计 8-12 题首次分析问卷\n- 外层人格命名，内层连续维度\n\n**产出物**\n画像维度表 / 初始问卷 / 字段字典 / 调用规则","x":0,"y":360,"width":460,"height":320,"color":"2"},
+		{"id":"mvp","type":"text","text":"# 03 做出 MVP\n\n**推荐流程**\n首次测试 -> 生成画像 -> 首轮对话 -> 小行动 -> 更新画像\n\n**轻量功能**\n- 个性回复\n- 晚安推送\n- 事件跟进\n\n**技术最小化**\n表单 + Agent + 结构化存储 + Prompt 调用","x":0,"y":760,"width":460,"height":320,"color":"4"},
+		{"id":"validation","type":"text","text":"# 04 验证产品价值\n\n**核心验证**\n用户是否感到被理解\n\n**关键指标**\n- 画像完成率\n- 次日留存\n- 7 日留存\n- 推送回复率\n- 主观评分\n\n**用户访谈**\n哪里最打动？哪里像套话？","x":0,"y":1160,"width":460,"height":320,"color":"4"},
+		{"id":"iterate","type":"text","text":"# 05 迭代深化\n\n- 优化题目、字段、提示词\n- 建立 场景 -> 画像 -> 回复 规则\n- 增加长期记忆\n- 做动态画像更新\n- 补齐小行动策略库","x":0,"y":1560,"width":460,"height":280,"color":"5"},
+		{"id":"brand-scale","type":"text","text":"# 06 扩张与品牌化\n\n- 切分高潜人群版本\n- 定制人格、语气、推送节奏\n- 建立会员服务与内容系统\n- 打造可分享的人格结果和品牌心智","x":0,"y":1920,"width":460,"height":280,"color":"6"},
+		{"id":"principles","type":"text","text":"# 核心原则\n\n1. 先底盘，后功能\n2. 先验证，后扩张\n3. 先被理解，再被陪伴，再被推动行动\n4. 目标不是做另一个豆包，而是做更懂用户的 AI","x":640,"y":120,"width":420,"height":330,"color":"3"},
+		{"id":"recommended-order","type":"text","text":"# 推荐顺序\n\n先完成画像系统\n-> 再做 MVP\n-> 再做主动推送\n-> 再做长期记忆\n\n**一句话**\n先把 AI 如何理解人这件事定义清楚，再谈功能和增长。","x":640,"y":960,"width":420,"height":280,"color":"5"},
+		{"id":"deliverables","type":"text","text":"# 第一阶段交付物\n\n- 用户画像维度表\n- 初始画像问卷\n- 陪伴人格命名体系\n- AI 回复规则\n- 主动推送文案规则\n- MVP 验证指标表","x":740,"y":620,"width":420,"height":280,"color":"2"}
+	],
+	"edges":[
+		{"id":"e1","fromNode":"north-star","fromSide":"bottom","toNode":"persona-core","toSide":"top","label":"先定方向"},
+		{"id":"e2","fromNode":"persona-core","fromSide":"bottom","toNode":"mvp","toSide":"top","label":"反推 MVP"},
+		{"id":"e3","fromNode":"mvp","fromSide":"bottom","toNode":"validation","toSide":"top","label":"验证价值"},
+		{"id":"e4","fromNode":"validation","fromSide":"bottom","toNode":"iterate","toSide":"top","label":"根据反馈迭代"},
+		{"id":"e5","fromNode":"iterate","fromSide":"bottom","toNode":"brand-scale","toSide":"top","label":"深化后扩张"},
+		{"id":"e6","fromNode":"persona-core","fromSide":"right","toNode":"deliverables","toSide":"left","label":"核心产物"},
+		{"id":"e7","fromNode":"north-star","fromSide":"right","toNode":"principles","toSide":"left","label":"原则"},
+		{"id":"e8","fromNode":"mvp","fromSide":"right","toNode":"recommended-order","toSide":"left","label":"实施建议"}
+	]
+}

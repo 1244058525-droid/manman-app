@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="1120" viewBox="0 0 1720 1120">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#1C1814" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .title{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-weight:700;fill:#1f1f1f;letter-spacing:0}
+      .body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-weight:400;fill:#3a3935;letter-spacing:0}
+      .muted{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-weight:400;fill:#6f6f68;letter-spacing:0}
+      .small{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-weight:500;fill:#6f6f68;letter-spacing:0}
+      .button{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;font-weight:600;fill:#fff;letter-spacing:0}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1720" height="1120" fill="#ECEBE7"/>
+  <text x="80" y="72" class="title" font-size="30">慢慢 App / Figma 页面稿</text>
+  <text x="80" y="108" class="muted" font-size="18">类 GPT 单主区布局，侧边栏默认隐藏，在聊天界面通过左上角按钮展开。</text>
+
+  <g transform="translate(80 150)">
+    <rect x="0" y="0" width="760" height="860" rx="28" fill="#ffffff" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="760" height="58" rx="28" fill="#ffffff"/>
+    <rect x="0" y="58" width="760" height="1" fill="#E6E3DC"/>
+    <rect x="20" y="12" width="38" height="38" rx="8" fill="#F7F7F5"/>
+    <text x="31" y="39" class="body" font-size="22">☰</text>
+    <text x="74" y="37" class="small" font-size="15">慢慢说，我会慢慢懂你。</text>
+
+    <g transform="translate(690 15) scale(.044)">
+      <path d="M739 189C766 166 799 158 830 172L970 232C1004 247 1026 281 1026 318V434C1026 457 1048 473 1070 466L1230 417C1265 406 1303 418 1326 447L1427 575C1450 604 1452 645 1433 677L1337 836L1544 923C1580 938 1601 976 1597 1015L1578 1172C1574 1208 1548 1238 1513 1248L1369 1290C1347 1296 1338 1322 1352 1340L1466 1491C1488 1521 1489 1562 1469 1593L1389 1713C1368 1744 1330 1760 1294 1752L1108 1711L1089 1914C1085 1952 1058 1983 1022 1992L905 2020C871 2028 835 2015 814 1987L741 1893C727 1875 700 1875 686 1893L613 1987C592 2015 556 2028 522 2020L405 1992C369 1983 342 1952 338 1914L319 1711L133 1752C97 1760 59 1744 38 1713L-42 1593C-62 1562 -61 1521 -39 1491L75 1340C89 1322 80 1296 58 1290L-86 1248C-121 1238 -147 1208 -151 1172L-170 1015C-174 976 -153 938 -117 923L90 836L-6 677C-25 645 -23 604 0 575L101 447C124 418 162 406 197 417L357 466C379 473 401 457 401 434V318C401 281 423 247 457 232L597 172C628 158 661 166 688 189L713 211C722 219 730 219 739 189Z" fill="#B3A3C6"/>
+    </g>
+
+    <text x="312" y="224" text-anchor="middle" class="title" font-size="42">慢慢</text>
+    <text x="224" y="278" class="title" font-size="25">慢慢说，我会慢慢懂你。</text>
+    <text x="146" y="326" class="muted" font-size="18">一个越来越懂你的 AI 陪伴。它不急着给你答案，</text>
+    <text x="126" y="354" class="muted" font-size="18">而是先理解你的状态，再用适合你的方式陪你聊天、整理情绪。</text>
+
+    <rect x="204" y="406" width="160" height="44" rx="8" fill="#1F1F1F"/>
+    <text x="238" y="435" class="button" font-size="16">开始认识我一点</text>
+    <rect x="376" y="406" width="118" height="44" rx="8" fill="#F7F7F5" stroke="#E6E3DC"/>
+    <text x="399" y="435" class="body" font-size="16">先直接聊天</text>
+
+    <text x="72" y="560" class="title" font-size="22">App 信息</text>
+    <rect x="72" y="588" width="616" height="1" fill="#E6E3DC"/>
+    <text x="72" y="634" class="title" font-size="16">官网 / App Store 简介</text>
+    <text x="72" y="672" class="body" font-size="18">慢慢是一款会逐渐认识你的 AI 陪伴产品。它不急着给你答案，</text>
+    <text x="72" y="700" class="body" font-size="18">而是先理解你的状态，再用适合你的方式陪你聊天、整理情绪、靠近下一步。</text>
+  </g>
+
+  <g transform="translate(880 150)">
+    <rect x="0" y="0" width="760" height="860" rx="28" fill="#ffffff" filter="url(#shadow)"/>
+    <rect x="0" y="0" width="760" height="58" rx="28" fill="#ffffff"/>
+    <rect x="0" y="58" width="760" height="1" fill="#E6E3DC"/>
+    <rect x="20" y="12" width="38" height="38" rx="8" fill="#F7F7F5"/>
+    <text x="31" y="39" class="body" font-size="22">☰</text>
+    <text x="74" y="37" class="small" font-size="15">慢慢说，我会慢慢懂你。</text>
+    <circle cx="704" cy="29" r="16" fill="#B3A3C6"/>
+
+    <g transform="translate(74 94)">
+      <circle cx="16" cy="16" r="16" fill="#fff" stroke="#E6E3DC"/>
+      <circle cx="16" cy="16" r="9" fill="#B3A3C6"/>
+      <text x="48" y="23" class="body" font-size="18">慢慢说就好。你不用一次讲清楚，我会先听你现在最想放下来的那一部分。</text>
+    </g>
+
+    <g transform="translate(430 194)">
+      <rect x="0" y="0" width="246" height="50" rx="8" fill="#F7F7F5"/>
+      <text x="18" y="31" class="body" font-size="17">我今天有点累，也说不上来。</text>
+    </g>
+
+    <g transform="translate(74 292)">
+      <circle cx="16" cy="16" r="16" fill="#fff" stroke="#E6E3DC"/>
+      <circle cx="16" cy="16" r="9" fill="#B3A3C6"/>
+      <text x="48" y="23" class="body" font-size="18">嗯，这一下会很耗人。</text>
+      <text x="48" y="55" class="body" font-size="18">你现在不用马上解释清楚，也不用立刻把自己整理好。</text>
+      <text x="48" y="87" class="body" font-size="18">可以先把这团东西放在这里，我陪你待一会儿。</text>
+    </g>
+
+    <g transform="translate(40 738)">
+      <rect x="0" y="0" width="680" height="64" rx="16" fill="#ffffff" stroke="#E6E3DC" filter="url(#shadow)"/>
+      <text x="20" y="39" class="muted" font-size="17">把现在想说的话放到这里</text>
+      <rect x="622" y="14" width="36" height="36" rx="9" fill="#1F1F1F"/>
+      <text x="633" y="39" class="button" font-size="20">↑</text>
+      <text x="108" y="96" class="muted" font-size="13">慢慢不是心理诊断工具。它会陪你整理，但重要风险请及时寻求现实支持。</text>
+    </g>
+  </g>
+
+  <g transform="translate(1010 250)">
+    <rect x="0" y="0" width="280" height="560" rx="18" fill="#F4F4F0" stroke="#E6E3DC" filter="url(#shadow)"/>
+    <circle cx="34" cy="36" r="17" fill="#fff" stroke="#E6E3DC"/>
+    <circle cx="34" cy="36" r="10" fill="#B3A3C6"/>
+    <text x="62" y="34" class="title" font-size="15">慢慢</text>
+    <text x="62" y="54" class="muted" font-size="12">AI 陪伴</text>
+    <rect x="16" y="82" width="248" height="40" rx="8" fill="#ffffff" stroke="#E6E3DC"/>
+    <text x="31" y="108" class="body" font-size="15">新对话</text>
+    <rect x="16" y="142" width="248" height="40" rx="8" fill="#E9E8E2"/>
+    <text x="31" y="168" class="body" font-size="15">慢慢聊天</text>
+    <rect x="16" y="186" width="248" height="40" rx="8" fill="transparent"/>
+    <text x="31" y="212" class="muted" font-size="15">产品信息</text>
+    <text x="24" y="530" class="muted" font-size="13">侧边栏默认隐藏，点击左上角展开。</text>
+  </g>
+</svg>

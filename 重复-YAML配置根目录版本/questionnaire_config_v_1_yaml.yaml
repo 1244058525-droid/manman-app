@@ -1,0 +1,614 @@
+# AI Companion Product｜Questionnaire Config V1
+# Purpose:
+# - Frontend-renderable questionnaire configuration for the first App MVP.
+# - Codex can use this file to build the onboarding questionnaire page.
+# - This config only controls UI rendering and answer validation.
+# - Persona scoring is handled separately by questionnaire_persona_mapping_v1.yaml.
+#
+# Product principle:
+# - This is not a personality test.
+# - This is not psychological diagnosis.
+# - The questionnaire helps the AI learn how to accompany the user.
+# - The UI should feel light, low-pressure, and editable.
+
+schema_version: "1.0.0"
+updated_at: "2026-05-06"
+language: "zh-CN"
+product_stage: "MVP_app"
+
+questionnaire_id: "initial_persona_questionnaire_v1"
+questionnaire_name: "初始画像问卷 V1"
+estimated_time: "约 3 分钟"
+
+# ------------------------------------------------------------
+# 1. Global UI copy
+# ------------------------------------------------------------
+
+opening_page:
+  route: "/onboarding/start"
+  title: "我想先认识你一点，再陪你。"
+  subtitle: |
+    不用一次把自己讲清楚。
+    你只要凭感觉选就好，大概 3 分钟。
+  description: |
+    答完后，我会生成一份属于你的「陪伴说明书」：
+    我该怎么和你说话、什么时候不要急着分析、什么时候可以陪你一起拆问题。
+
+    你之后随时可以改。
+  safety_note: |
+    这不是心理诊断，也不会把你固定成某一种人。
+    它只是帮助我更温柔、更准确地理解你。
+  buttons:
+    primary:
+      label: "开始认识我一点"
+      action: "go_to_questionnaire"
+      next_route: "/onboarding/questionnaire"
+    secondary:
+      label: "先直接聊天"
+      action: "skip_onboarding_go_chat"
+      next_route: "/chat"
+      note: "允许跳过，但聊天会使用默认陪伴规则。"
+
+questionnaire_page:
+  route: "/onboarding/questionnaire"
+  title: "先认识你一点"
+  progress_enabled: true
+  allow_back: true
+  allow_skip_optional_questions: true
+  autosave_answers: true
+  submit_button_label: "生成我的陪伴说明"
+  footer_hint: "不用选最准确的，选第一眼最像的就好。"
+  validation_error_copy:
+    required: "这题选一下就好，不用想太久。"
+    max_selected: "这题最多可以选 {max_selected} 个。"
+
+result_page:
+  route: "/onboarding/result"
+  title_template: "你现在更像「{primary_persona_name}」"
+  fallback_title: "这是我对你的第一版陪伴说明"
+  editable_notice: "这只是第一版，你之后随时可以改。"
+
+# ------------------------------------------------------------
+# 2. Questionnaire behavior
+# ------------------------------------------------------------
+
+behavior:
+  required_main_questions_count: 12
+  optional_questions_count: 2
+  submit_allowed_when:
+    required_questions_answered: true
+  if_user_exits_midway:
+    save_draft: true
+    resume_route: "/onboarding/questionnaire"
+  if_user_skips_onboarding:
+    create_default_profile: true
+    default_profile_type: "low_pressure_default"
+    next_route: "/chat"
+
+answer_format:
+  single_choice: "string option_id"
+  multi_choice: "array of option_id strings"
+  open_text: "string | null"
+
+submission_payload_shape:
+  user_id: "string"
+  answers:
+    Q1: "string"
+    Q2: "array"
+    Q3: "array"
+    Q4: "string"
+    Q5: "array"
+    Q6: "array"
+    Q7: "string"
+    Q8: "array"
+    Q9: "array"
+    Q10: "array"
+    Q11: "string"
+    Q12: "string"
+    Q13: "string | null"
+    Q14: "string | null"
+
+# ------------------------------------------------------------
+# 3. Stages
+# ------------------------------------------------------------
+
+stages:
+  - id: A_recent_state
+    title: "最近状态"
+    question_ids: [Q1, Q2]
+    purpose: "判断当前生活状态、情绪主线。"
+
+  - id: B_support_style
+    title: "被陪伴方式"
+    question_ids: [Q3, Q4]
+    purpose: "判断沟通偏好、情绪态回复方式。"
+
+  - id: C_life_roles
+    title: "生活角色组合"
+    question_ids: [Q5, Q6]
+    purpose: "判断用户被哪些生活责任牵引。"
+
+  - id: D_decision_action
+    title: "决策与行动"
+    question_ids: [Q7, Q8, Q9]
+    purpose: "判断决策模式、行动阻力。"
+
+  - id: E_aesthetic_ideal_self
+    title: "审美与理想自我"
+    question_ids: [Q10, Q11]
+    purpose: "判断生活向往和长期陪伴方向。"
+
+  - id: F_push_boundary
+    title: "主动陪伴边界"
+    question_ids: [Q12]
+    purpose: "判断主动消息接受度。"
+
+  - id: G_optional_open_text
+    title: "可选补充"
+    question_ids: [Q13, Q14]
+    purpose: "增加个性化深度和首轮被看见感。"
+
+# ------------------------------------------------------------
+# 4. Questions
+# ------------------------------------------------------------
+
+questions:
+  - id: Q1
+    stage_id: A_recent_state
+    title: "最近的你，更像哪一种状态？"
+    description: "不用选“最准确”的，选第一眼最像的就好。"
+    type: single_choice
+    required: true
+    options:
+      - id: A
+        label: "很累，但停不下来"
+        value: "tired_but_cannot_stop"
+      - id: B
+        label: "脑子很乱，事情很多"
+        value: "messy_mind_many_things"
+      - id: C
+        label: "有点空，不太知道自己想要什么"
+        value: "empty_not_sure_what_want"
+      - id: D
+        label: "表面正常，但心里消耗很大"
+        value: "normal_outside_drained_inside"
+      - id: E
+        label: "想变好，但就是动不起来"
+        value: "want_better_but_cannot_move"
+      - id: F
+        label: "其实还可以，只是想找个更懂我的 AI"
+        value: "okay_but_want_understood_ai"
+
+  - id: Q2
+    stage_id: A_recent_state
+    title: "你通常在什么时候，最想有人陪你一下？"
+    description: "这里不是问“你脆弱吗”，只是帮我知道该在哪些时刻更轻一点。"
+    type: multi_choice
+    required: true
+    max_selected: 3
+    options:
+      - id: A
+        label: "睡前，脑子开始乱的时候"
+        value: "before_sleep_mind_messy"
+      - id: B
+        label: "工作/学习被打断、被否定之后"
+        value: "after_work_study_interrupted_or_denied"
+      - id: C
+        label: "做选择，不知道该怎么办的时候"
+        value: "when_making_decisions"
+      - id: D
+        label: "和别人相处不舒服之后"
+        value: "after_uncomfortable_relationship_interaction"
+      - id: E
+        label: "刷手机刷到空下来的时候"
+        value: "after_scrolling_phone_feeling_empty"
+      - id: F
+        label: "一个人吃饭、通勤、散步的时候"
+        value: "alone_meal_commute_walk"
+      - id: G
+        label: "买东西前，想让人帮我判断一下"
+        value: "before_purchase_need_judgment"
+
+  - id: Q3
+    stage_id: B_support_style
+    title: "你状态不好的时候，最不想听到哪种话？"
+    description: "这题很重要。它会告诉我，以后哪些话不要对你说。"
+    type: multi_choice
+    required: true
+    max_selected: 3
+    options:
+      - id: A
+        label: "“你要积极一点”"
+        value: "be_more_positive"
+      - id: B
+        label: "“你已经很棒了”这种泛泛鼓励"
+        value: "generic_encouragement"
+      - id: C
+        label: "一上来就给我分析原因"
+        value: "analysis_too_early"
+      - id: D
+        label: "直接告诉我“你就是在逃避/内耗”"
+        value: "direct_definition"
+      - id: E
+        label: "给我列一堆建议"
+        value: "too_many_suggestions"
+      - id: F
+        label: "一直问我“为什么”"
+        value: "asking_why_repeatedly"
+      - id: G
+        label: "太冷静、太客观，像客服"
+        value: "too_cold_like_customer_service"
+
+  - id: Q4
+    stage_id: B_support_style
+    title: "如果你不开心，我更适合先怎么陪你？"
+    description: "不是永远这样，只是先让我知道你的默认偏好。"
+    type: single_choice
+    required: true
+    options:
+      - id: A
+        label: "先别分析，陪我待一会儿"
+        value: "companion_first"
+      - id: B
+        label: "先帮我把感受说清楚"
+        value: "reflect_feelings_first"
+      - id: C
+        label: "可以温柔地帮我分析"
+        value: "gentle_analysis_allowed"
+      - id: D
+        label: "我更喜欢直接一点，别绕"
+        value: "direct_clear"
+      - id: E
+        label: "先问我一句要不要解决"
+        value: "ask_before_solving"
+      - id: F
+        label: "看情况，你先判断我是不是准备好了"
+        value: "detect_readiness_first"
+
+  - id: Q5
+    stage_id: C_life_roles
+    title: "最近你的生活，主要被哪些事情牵着走？"
+    description: "一个人不只有职业。这里是想知道你最近真正被什么占用。"
+    type: multi_choice
+    required: true
+    max_selected: 4
+    options:
+      - id: A
+        label: "工作/学习任务"
+        value: "work_study_tasks"
+      - id: B
+        label: "创作、设计、内容、表达"
+        value: "creation_design_content_expression"
+      - id: C
+        label: "团队、沟通、管理责任"
+        value: "team_communication_management"
+      - id: D
+        label: "家庭、伴侣、孩子、父母"
+        value: "family_partner_children_parents"
+      - id: E
+        label: "宠物、照护、陪伴责任"
+        value: "pet_care_companion_responsibility"
+      - id: F
+        label: "自己的情绪和状态"
+        value: "own_emotion_state"
+      - id: G
+        label: "花钱、选择、购物纠结"
+        value: "spending_choice_shopping_hesitation"
+      - id: H
+        label: "转型、迷茫、方向感"
+        value: "transition_confusion_direction"
+
+  - id: Q6
+    stage_id: C_life_roles
+    title: "最近最消耗你的，比较像哪种拉扯？"
+    description: "有时候累不是因为一件事，而是几个自己在打架。"
+    type: multi_choice
+    required: true
+    max_selected: 2
+    options:
+      - id: A
+        label: "想变好，但真的没能量"
+        value: "ideal_self_vs_real_energy"
+      - id: B
+        label: "想松弛，但又怕自己落后"
+        value: "relaxation_vs_self_discipline_anxiety"
+      - id: C
+        label: "想照顾别人，但自己也很累"
+        value: "care_others_vs_self_care"
+      - id: D
+        label: "想买点东西奖励自己，但又怕后悔"
+        value: "purchase_reward_vs_regret"
+      - id: E
+        label: "想独立，但也很想被理解"
+        value: "independence_vs_understanding_need"
+      - id: F
+        label: "不想社交，但又怕关系变远"
+        value: "social_boundary_vs_relationship_distance"
+      - id: G
+        label: "想做出成绩，但生活已经被挤压"
+        value: "achievement_vs_life_space"
+
+  - id: Q7
+    stage_id: D_decision_action
+    title: "当你说“我不知道怎么办”时，通常是哪一种？"
+    description: "我会根据这个，决定是先陪你，还是帮你拆。"
+    type: single_choice
+    required: true
+    options:
+      - id: A
+        label: "其实我只是太乱了，想先有人听我说"
+        value: "too_messy_need_listening"
+      - id: B
+        label: "我想知道自己为什么这样"
+        value: "want_to_understand_why"
+      - id: C
+        label: "我需要有人帮我判断哪个更好"
+        value: "need_decision_confirmation"
+      - id: D
+        label: "我知道该做什么，但启动不了"
+        value: "know_what_but_cannot_start"
+      - id: E
+        label: "我想直接知道下一步怎么做"
+        value: "want_next_step"
+      - id: F
+        label: "我自己也不确定，需要你先判断"
+        value: "need_ai_detect_readiness"
+
+  - id: Q8
+    stage_id: D_decision_action
+    title: "做选择时，你最容易卡在哪里？"
+    description: "比如买东西、回消息、做决定，都算。"
+    type: multi_choice
+    required: true
+    max_selected: 2
+    options:
+      - id: A
+        label: "信息太多，越看越乱"
+        value: "too_much_information"
+      - id: B
+        label: "怕选错，怕后悔"
+        value: "fear_wrong_choice_regret"
+      - id: C
+        label: "总想找到最优解"
+        value: "want_best_solution"
+      - id: D
+        label: "很容易被别人推荐带走"
+        value: "easily_influenced_by_recommendations"
+      - id: E
+        label: "当下喜欢就想买/做，之后又后悔"
+        value: "impulse_then_regret"
+      - id: F
+        label: "其实我能判断，但需要被确认一下"
+        value: "can_decide_but_need_confirmation"
+
+  - id: Q9
+    stage_id: D_decision_action
+    title: "你想改变一件事时，最容易卡在哪里？"
+    description: "这里不是看你有没有自律，是看我以后怎么把事情帮你变小。"
+    type: multi_choice
+    required: true
+    max_selected: 2
+    options:
+      - id: A
+        label: "一开始目标定太大"
+        value: "goal_too_big"
+      - id: B
+        label: "不知道第一步是什么"
+        value: "no_first_step"
+      - id: C
+        label: "太累了，没电"
+        value: "too_tired_low_energy"
+      - id: D
+        label: "容易三分钟热度"
+        value: "short_lived_motivation"
+      - id: E
+        label: "怕做不好，所以干脆不开始"
+        value: "fear_failure_perfectionism"
+      - id: F
+        label: "很容易被手机、短视频打断"
+        value: "distracted_by_phone_short_videos"
+
+  - id: Q10
+    stage_id: E_aesthetic_ideal_self
+    title: "你更向往哪种生活感？"
+    description: "这题会影响我以后怎么给你建议、推荐和表达。"
+    type: multi_choice
+    required: true
+    max_selected: 3
+    options:
+      - id: A
+        label: "轻一点，不用太用力"
+        value: "lighter_less_forceful"
+      - id: B
+        label: "有秩序，心里更稳"
+        value: "ordered_stable"
+      - id: C
+        label: "更松弛，不总是紧绷"
+        value: "relaxed_less_tense"
+      - id: D
+        label: "更有行动力，不总是卡住"
+        value: "more_action_less_stuck"
+      - id: E
+        label: "更会选择，少后悔"
+        value: "better_choices_less_regret"
+      - id: F
+        label: "更像自己，而不是一直迎合别人"
+        value: "more_self_less_pleasing"
+      - id: G
+        label: "生活更有审美和质感"
+        value: "more_aesthetic_life_quality"
+
+  - id: Q11
+    stage_id: E_aesthetic_ideal_self
+    title: "如果我长期陪你，你最希望我帮你靠近哪种状态？"
+    description: "不用宏大，选一个你最想慢慢靠近的方向。"
+    type: single_choice
+    required: true
+    options:
+      - id: A
+        label: "少一点内耗"
+        value: "less_internal_consumption"
+      - id: B
+        label: "睡前更平静"
+        value: "calmer_before_sleep"
+      - id: C
+        label: "做决定更轻松"
+        value: "easier_decision_making"
+      - id: D
+        label: "情绪来的时候不那么孤单"
+        value: "less_lonely_when_emotional"
+      - id: E
+        label: "想做的事能慢慢开始"
+        value: "start_things_slowly"
+      - id: F
+        label: "买东西更清醒"
+        value: "clearer_consumption_judgment"
+      - id: G
+        label: "更敢表达自己的感受"
+        value: "dare_express_feelings"
+
+  - id: Q12
+    stage_id: F_push_boundary
+    title: "你愿意我主动来找你吗？"
+    description: "像朋友轻轻问一句，不是打卡，也不是催你。"
+    type: single_choice
+    required: true
+    options:
+      - id: A
+        label: "可以，晚上轻轻问我一句就好"
+        value: "evening_gentle_checkin"
+      - id: B
+        label: "可以，但不要太频繁"
+        value: "allowed_not_too_frequent"
+      - id: C
+        label: "只有我提过重要事情时，你再跟进"
+        value: "event_followup_only"
+      - id: D
+        label: "我不太喜欢主动提醒"
+        value: "dislike_active_reminders"
+      - id: E
+        label: "以后再说，先别主动找我"
+        value: "push_disabled_for_now"
+
+  - id: Q13
+    stage_id: G_optional_open_text
+    title: "最近最让你消耗的一件事是什么？"
+    description: "可以只写一句，不用讲完整。"
+    type: open_text
+    required: false
+    max_length: 300
+    placeholder: "比如：最近工作和生活都堆在一起，脑子很乱。"
+    skip_label: "跳过"
+
+  - id: Q14
+    stage_id: G_optional_open_text
+    title: "如果我以后陪你，你最希望我记住你哪一点？"
+    description: "可以是一个偏好、一句禁忌、一个习惯，或者一句“别这样对我”。"
+    type: open_text
+    required: false
+    max_length: 300
+    placeholder: "比如：不要一上来分析我，先陪我一下。"
+    skip_label: "跳过"
+
+# ------------------------------------------------------------
+# 5. Frontend rendering rules
+# ------------------------------------------------------------
+
+frontend_rendering_rules:
+  layout:
+    mobile_first: true
+    one_question_per_screen: true
+    show_progress: true
+    progress_format: "{current}/{total}"
+    optional_questions_mark: "可跳过"
+
+  option_style:
+    single_choice: "radio_card"
+    multi_choice: "checkbox_card"
+    open_text: "textarea"
+
+  interaction:
+    auto_advance_after_single_choice: false
+    next_button_label: "下一题"
+    previous_button_label: "上一题"
+    submit_button_label: "生成我的陪伴说明"
+
+  copy_style:
+    avoid_words:
+      - "测试"
+      - "诊断"
+      - "人格类型"
+      - "心理评估"
+      - "请认真作答"
+    prefer_words:
+      - "先认识你一点"
+      - "凭感觉选"
+      - "可以跳过"
+      - "之后可以改"
+      - "陪伴说明"
+
+# ------------------------------------------------------------
+# 6. Backend validation rules
+# ------------------------------------------------------------
+
+backend_validation_rules:
+  required_questions:
+    - Q1
+    - Q2
+    - Q3
+    - Q4
+    - Q5
+    - Q6
+    - Q7
+    - Q8
+    - Q9
+    - Q10
+    - Q11
+    - Q12
+
+  optional_questions:
+    - Q13
+    - Q14
+
+  max_selected:
+    Q2: 3
+    Q3: 3
+    Q5: 4
+    Q6: 2
+    Q8: 2
+    Q9: 2
+    Q10: 3
+
+  open_text_max_length:
+    Q13: 300
+    Q14: 300
+
+  reject_submission_if:
+    - "required question missing"
+    - "unknown option id"
+    - "multi choice exceeds max_selected"
+    - "open text exceeds max_length"
+
+# ------------------------------------------------------------
+# 7. Codex implementation notes
+# ------------------------------------------------------------
+
+codex_implementation_notes:
+  frontend:
+    - "Build /onboarding/start from opening_page config."
+    - "Build /onboarding/questionnaire by rendering questions array."
+    - "Use one-question-per-screen mobile-first layout."
+    - "Validate max_selected on frontend before submit."
+    - "Allow Q13 and Q14 to be skipped."
+    - "Submit answers to POST /api/onboarding/submit."
+
+  backend:
+    - "Validate answers using backend_validation_rules."
+    - "Save questionnaire_record."
+    - "Pass answers to questionnaire_persona_mapping_v1.yaml scoring engine."
+    - "Return persona_result, profile_patch, and result_page content."
+
+  mvp_shortcut:
+    - "If backend is not ready, frontend can use mock result_page data first."
+    - "Do not block UI development on model integration."
+    - "Questionnaire scoring can be rule-based and does not require LLM."
