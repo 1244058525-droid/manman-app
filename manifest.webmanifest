@@ -1,0 +1,17 @@
+{
+  "name": "慢慢 AI 陪伴",
+  "short_name": "慢慢",
+  "description": "一个越来越懂你的 AI 陪伴 App。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/assets/manman-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

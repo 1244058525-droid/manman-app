@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Remote Config 验证</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; max-width: 640px; margin: 40px auto; padding: 20px; }
+    pre { background: #f5f5f7; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+    .test { margin: 12px 0; padding: 12px; border: 1px solid #d2d2d7; border-radius: 8px; }
+    .pass { color: #34c759; } .fail { color: #ff3b30; }
+    button { padding: 10px 24px; border-radius: 8px; border: none; background: #0071e3; color: #fff; cursor: pointer; font-size: 14px; margin: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eee; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>🌐 Remote Config 验证</h1>
+
+  <div class="test" id="test1">⏳ 等待运行...</div>
+  <div class="test" id="test2">⏳ 等待运行...</div>
+
+  <p><button onclick="run()">运行验证</button></p>
+
+  <script type="module">
+    import { remoteConfigDefaults } from "./remote-config-defaults.js";
+
+    window.run = async function() {
+      const r1 = document.getElementById("test1");
+      const r2 = document.getElementById("test2");
+
+      // Test 1: Server API
+      r1.innerHTML = "⏳ 正在检查服务器配置 API...";
+      try {
+        const res = await fetch("/api/admin/remote-config");
+        const data = await res.json();
+        if (data.ok) {
+          r1.innerHTML = "✅ 服务器配置 API 正常<br>配置项数量: " + Object.keys(data.config).length;
+        } else {
+          r1.innerHTML = "❌ 服务器返回错误";
+          return;
+        }
+      } catch (e) {
+        r1.innerHTML = "❌ 无法连接服务器: " + e.message;
+        return;
+      }
+
+      // Test 2: Check if page loads config
+      r2.innerHTML = "⏳ 正在验证页面配置加载...";
+      try {
+        const res = await fetch("/api/admin/remote-config");
+        const data = await res.json();
+        const config = data.config;
+
+        let html = "<table><tr><th>参数</th><th>默认值</th><th>实际值</th><th>状态</th></tr>";
+        let overridden = 0;
+
+        for (const key of Object.keys(remoteConfigDefaults)) {
+          const def = remoteConfigDefaults[key];
+          const actual = config[key] || def;
+          const changed = actual !== def;
+          if (changed) overridden++;
+
+          html += `<tr>
+            <td><b>${key}</b></td>
+            <td style="color:#888;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${def.substring(0, 25)}</td>
+            <td style="${changed ? 'color:#34c759;font-weight:600' : ''}">${actual.substring(0, 25)}</td>
+            <td>${changed ? '☁️ 已覆盖' : '📱 默认'}</td>
+          </tr>`;
+        }
+        html += "</table>";
+
+        r2.innerHTML = `<p class="pass">✅ ${overridden}/${Object.keys(remoteConfigDefaults).length} 个参数被云端覆盖</p>` + html;
+      } catch (e) {
+        r2.innerHTML = "❌ 验证失败: " + e.message;
+      }
+    };
+  </script>
+</body>
+</html>
