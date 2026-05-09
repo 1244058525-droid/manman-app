@@ -1,11 +1,5 @@
-const MANMAN_BACKEND = "https://manman-app-eight.vercel.app";
-const CORS_PROXY = "https://corsproxy.io/?";
 const isGitHubPages = window.location.hostname.includes("github.io");
-const API_BASE = window.location.protocol === "file:"
-  ? "http://localhost:8787"
-  : isGitHubPages
-    ? ""
-    : "";
+const API_BASE = window.location.protocol === "file:" ? "http://localhost:8787" : "";
 const USER_ID = "local-demo-user-onboarding-v2";
 const CONVERSATION_ID = "local-demo-conversation";
 const LOCAL_PROFILE_KEY = "manman.localProfile.v2";
@@ -291,30 +285,98 @@ async function restoreUserProfile() {
 }
 
 async function apiRequest(path, options = {}) {
-  // GitHub Pages: use CORS proxy to reach backend
-  const baseUrl = isGitHubPages ? `${CORS_PROXY}${encodeURIComponent(MANMAN_BACKEND + path)}` : `${API_BASE}${path}`;
-  const fetchOptions = {
+  if (isGitHubPages) {
+    return await apiRequestLocal(path, options);
+  }
+  const response = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json" },
     ...options
-  };
-
-  // CORS proxy needs decoded URL in some cases; try direct first, fallback to proxy
-  let response;
-  try {
-    response = await fetch(`${API_BASE}${path}`, fetchOptions);
-  } catch (e) {
-    if (isGitHubPages) {
-      // Fallback: try CORS proxy
-      const proxyUrl = `${CORS_PROXY}${MANMAN_BACKEND}${path}`;
-      response = await fetch(proxyUrl, fetchOptions);
-    } else {
-      throw e;
-    }
-  }
-
+  });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "请求失败");
   return data;
+}
+
+async function apiRequestLocal(path, options = {}) {
+  if (path === "/api/onboarding/questionnaire") {
+    const resp = await fetch("./data/questionnaireConfig.json");
+    return await resp.json();
+  }
+  if (path === "/api/chat/message") {
+    return await callMiMoDirectly(options);
+  }
+  if (path === "/api/health") return { ok: true, mode: "client-side" };
+  if (path.startsWith("/api/user/")) return handleUserApi(path, options);
+  if (path.startsWith("/api/onboarding/")) return handleOnboardingApi(path, options);
+  if (path.startsWith("/api/admin/")) return handleAdminApi(path, options);
+  throw new Error("此功能需要后端支持");
+}
+
+async function callMiMoDirectly(options) {
+  const payload = JSON.parse(options.body || "{}");
+  const message = payload.message || "";
+  const personaResult = payload.persona_result || "";
+  const userProfile = payload.user_profile || "";
+  const recentMessages = payload.recent_messages || [];
+
+  let systemPrompt = "你是「慢慢」，一款 AI 陪伴产品。你不急着给答案，而是先理解用户的状态，再用适合的方式陪伴。回复要自然口语化，不要报告腔。";
+  if (personaResult) systemPrompt += "\n用户画像：" + (typeof personaResult === 'object' ? JSON.stringify(personaResult) : personaResult);
+  if (userProfile) systemPrompt += "\n用户偏好：" + (typeof userProfile === 'object' ? JSON.stringify(userProfile) : userProfile);
+
+  const messages = [{ role: "system", content: systemPrompt }];
+  for (const msg of recentMessages) messages.push({ role: msg.role, content: msg.content });
+  messages.push({ role: "user", content: message });
+
+  const mimoResp = await fetch("https://api.xiaomimimo.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer sk-cu1t1nqC5TB5r1INblR4UDFWvWz33t3sZIB4T74RaJXJxQVY33j3HqgGcmWEGbJu523j4aj2Na36qT8T0ce30ih"
+    },
+    body: JSON.stringify({ model: "mimo-v2-pro", messages, temperature: 0.85, max_tokens: 900 })
+  });
+
+  if (!mimoResp.ok) throw new Error("AI 回复生成失败");
+  const mimoData = await mimoResp.json();
+  const reply = mimoData.choices?.[0]?.message?.content || "抱歉，我现在没能生成回复。";
+  return { ok: true, message: reply, assistant_reply: reply, mode: "client-direct" };
+}
+
+function handleUserApi(path, options) {
+  const profileKey = "manman_user_profile";
+  if (path.includes("/profile") && (!options.method || options.method === "GET")) {
+    const saved = localStorage.getItem(profileKey);
+    return saved ? JSON.parse(saved) : { user_id: "local-demo-user" };
+  }
+  if (options.method === "POST" || options.method === "PUT") {
+    localStorage.setItem(profileKey, options.body || "{}");
+    return { ok: true };
+  }
+  if (path.includes("/reset")) {
+    localStorage.removeItem(profileKey);
+    localStorage.removeItem("manman_conversation");
+    return { ok: true };
+  }
+  return { ok: true };
+}
+
+function handleOnboardingApi(path, options) {
+  if (path === "/api/onboarding/submit" || path === "/api/onboarding/save-result") {
+    const body = JSON.parse(options.body || "{}");
+    const profileKey = "manman_user_profile";
+    const existing = JSON.parse(localStorage.getItem(profileKey) || "{}");
+    localStorage.setItem(profileKey, JSON.stringify({ ...existing, ...body, saved_at: new Date().toISOString() }));
+    return { ok: true, persona_result: body.persona_result || body };
+  }
+  return { ok: true };
+}
+
+function handleAdminApi(path, options) {
+  if (path === "/api/admin/model-config" && (!options.method || options.method === "GET")) {
+    return { provider: "mimo", model: "mimo-v2-pro", conversation_mode: "companion", use_real_model: true, temperature: 0.85, max_tokens: 900 };
+  }
+  if (path === "/api/admin/model-test") return { ok: true, message: "客户端直连模式" };
+  return { ok: true };
 }
 
 function showView(view) {
