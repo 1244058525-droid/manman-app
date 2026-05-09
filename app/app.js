@@ -1,7 +1,10 @@
+const MANMAN_BACKEND = "https://manman-app-eight.vercel.app";
+const CORS_PROXY = "https://corsproxy.io/?";
+const isGitHubPages = window.location.hostname.includes("github.io");
 const API_BASE = window.location.protocol === "file:"
   ? "http://localhost:8787"
-  : window.location.hostname.includes("github.io")
-    ? "https://manman-app-eight.vercel.app"
+  : isGitHubPages
+    ? ""
     : "";
 const USER_ID = "local-demo-user-onboarding-v2";
 const CONVERSATION_ID = "local-demo-conversation";
@@ -288,10 +291,26 @@ async function restoreUserProfile() {
 }
 
 async function apiRequest(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
+  // GitHub Pages: use CORS proxy to reach backend
+  const baseUrl = isGitHubPages ? `${CORS_PROXY}${encodeURIComponent(MANMAN_BACKEND + path)}` : `${API_BASE}${path}`;
+  const fetchOptions = {
     headers: { "Content-Type": "application/json" },
     ...options
-  });
+  };
+
+  // CORS proxy needs decoded URL in some cases; try direct first, fallback to proxy
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, fetchOptions);
+  } catch (e) {
+    if (isGitHubPages) {
+      // Fallback: try CORS proxy
+      const proxyUrl = `${CORS_PROXY}${MANMAN_BACKEND}${path}`;
+      response = await fetch(proxyUrl, fetchOptions);
+    } else {
+      throw e;
+    }
+  }
 
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "请求失败");
