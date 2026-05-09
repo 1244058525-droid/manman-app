@@ -1,4 +1,8 @@
-const API_BASE = window.location.protocol === "file:" ? "http://localhost:8787" : "";
+const API_BASE = window.location.protocol === "file:"
+  ? "http://localhost:8787"
+  : window.location.hostname.includes("github.io")
+    ? "https://manman-app-eight.vercel.app"
+    : "";
 const USER_ID = "local-demo-user-onboarding-v2";
 const CONVERSATION_ID = "local-demo-conversation";
 const LOCAL_PROFILE_KEY = "manman.localProfile.v2";
