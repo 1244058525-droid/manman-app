@@ -479,7 +479,7 @@ function playQuestionnaireOpening() {
 
   window.setTimeout(() => {
     firstBlock?.classList.remove("pre-intro");
-    showQuestion(0, { animate: false, lineIntro: true });
+    showQuestion(0, { animate: true, lineIntro: true });
   }, 260);
 }
 
@@ -725,23 +725,29 @@ function showQuestion(index, options = {}) {
 
   blocks.forEach((block) => {
     block.classList.remove("active", "entering", "leaving-up", "line-intro", "line-out");
-    if (Number(block.dataset.questionIndex) === index) {
-      block.classList.add("active");
-      if (shouldAnimate) {
-        block.classList.add("entering");
-      }
-      if (shouldAnimateLines) {
-        block.classList.add("line-intro");
-        window.setTimeout(() => {
-          block.classList.remove("line-intro");
-        }, 1300);
-      }
-    }
   });
 
-  currentQuestionIndex = index;
-  updateProgress();
-  updateQuestionControls(index);
+  requestAnimationFrame(() => {
+    const targetBlock = questionnaireForm.querySelector(
+      `[data-question-index="${index}"]`
+    );
+    if (targetBlock) {
+      targetBlock.classList.add("active");
+      if (shouldAnimate) {
+        targetBlock.classList.add("entering");
+      }
+      if (shouldAnimateLines) {
+        requestAnimationFrame(() => {
+          targetBlock.classList.add("line-intro");
+          setTimeout(() => targetBlock.classList.remove("line-intro"), 1300);
+        });
+      }
+    }
+
+    currentQuestionIndex = index;
+    updateProgress();
+    updateQuestionControls(index);
+  });
 }
 
 function goToQuestion(nextIndex) {
@@ -760,7 +766,7 @@ function goToQuestion(nextIndex) {
 
   window.setTimeout(() => {
     currentBlock.classList.remove("line-out");
-    showQuestion(nextIndex, { animate: false, lineIntro: true });
+    showQuestion(nextIndex, { animate: true, lineIntro: true });
 
     window.setTimeout(() => {
       questionAnimating = false;
