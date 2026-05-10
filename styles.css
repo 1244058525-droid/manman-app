@@ -130,7 +130,7 @@ button {
 
 .intro-text-only p {
   margin: 0;
-  font-size: clamp(20px, 3.1vw, 34px);
+  font-size: clamp(16px, 2.6vw, 28px);
   line-height: 1.72;
   font-weight: 520;
   letter-spacing: 0;

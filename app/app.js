@@ -361,15 +361,120 @@ function handleUserApi(path, options) {
 }
 
 function handleOnboardingApi(path, options) {
-  if (path === "/api/onboarding/submit" || path === "/api/onboarding/save-result") {
+  if (path === "/api/onboarding/submit") {
+    const body = JSON.parse(options.body || "{}");
+    const result = generateLocalPersonaResult(body.answers || {});
+    const profileKey = "manman_user_profile";
+    const existing = JSON.parse(localStorage.getItem(profileKey) || "{}");
+    localStorage.setItem(profileKey, JSON.stringify({
+      ...existing, ...body,
+      persona_result: result.persona_result,
+      profile_patch: result.profile_patch,
+      result_page: result.result_page,
+      saved_at: new Date().toISOString()
+    }));
+    return result;
+  }
+  if (path === "/api/onboarding/save-result") {
     const body = JSON.parse(options.body || "{}");
     const profileKey = "manman_user_profile";
     const existing = JSON.parse(localStorage.getItem(profileKey) || "{}");
     localStorage.setItem(profileKey, JSON.stringify({ ...existing, ...body, saved_at: new Date().toISOString() }));
-    return { ok: true, persona_result: body.persona_result || body };
+    return { ok: true };
   }
   return { ok: true };
 }
+
+function generateLocalPersonaResult(answers) {
+  const q1 = answers.Q1 || "A";
+  const personaMap = {
+    A: { name: "疲惫奔跑者", intro: "你一直在跑，但很少有人问你累不累。", support: "先不分析，陪你安静待一会儿。", avoid: "不说「你已经很努力了」这种话，因为你知道自己努力，只是还是不够。" },
+    B: { name: "雾中整理者", intro: "你脑子里有很多事在同时转，但找不到线头。", support: "帮你把乱的东西一件一件摆出来，不急着下结论。", avoid: "不催你做决定，也不说「你想太多了」。" },
+    C: { name: "平静探索者", intro: "你不是不好，只是还不太确定自己想要什么。", support: "陪你慢慢探索，不急着给你方向。", avoid: "不说「你应该试试这个」，让你自己找到答案。" },
+    D: { name: "温柔内耗者", intro: "你看起来一切都好，但心里的消耗只有自己知道。", support: "先看见你的感受，不急着修好什么。", avoid: "不说「想开点」「别内耗」，因为你知道没那么简单。" },
+    E: { name: "慢热行动派", intro: "你想变好，只是第一步总是最难的。", support: "帮你找到最小的一步，不用一下子跨很远。", avoid: "不催你，不说「怎么还没开始」。" },
+    F: { name: "清醒陪伴者", intro: "你其实还可以，只是想要一个真正懂你的存在。", support: "用你喜欢的方式陪你，不制造问题也不过度关心。", avoid: "不把你当成需要修好的人，就是好好陪着。" }
+  };
+  const persona = personaMap[q1] || personaMap.A;
+
+  const patch = {};
+  if (q1) patch.current_state = q1;
+  if (answers.Q4) patch.communication_preference = answers.Q4;
+  if (answers.Q7) patch.decision_style = answers.Q7;
+  if (answers.Q11) patch.desired_state = answers.Q11;
+  if (answers.Q12) patch.push_boundary = answers.Q12;
+
+  const supportList = [persona.support];
+  if (answers.Q4 === "A") supportList.push("你想安静的时候，我就安静陪你。");
+  if (answers.Q4 === "B") supportList.push("你表达不清楚的时候，我帮你把话说出来。");
+  if (answers.Q4 === "C") supportList.push("你想分析的时候，我温柔地帮你拆。");
+  if (answers.Q4 === "D") supportList.push("你想直说的时候，我也直接一点。");
+  if (answers.Q4 === "E") supportList.push("你准备好了我再动手，不催你。");
+  if (answers.Q11 === "A") supportList.push("帮你减少内耗，把能量留给重要的事。");
+  if (answers.Q11 === "B") supportList.push("睡前陪你整理一天，让你更容易放下。");
+  if (answers.Q11 === "C") supportList.push("帮你理清选项，让选择不那么累。");
+  if (answers.Q11 === "D") supportList.push("情绪来的时候，你不是一个人。");
+  if (answers.Q11 === "E") supportList.push("帮你拆解第一步，让行动变得可启动。");
+
+  const avoidList = [persona.avoid];
+  const q3 = Array.isArray(answers.Q3) ? answers.Q3 : [answers.Q3].filter(Boolean);
+  if (q3.includes("A")) avoidList.push("不说「你要积极一点」。");
+  if (q3.includes("B")) avoidList.push("不说「你已经很棒了」这种泛泛鼓励。");
+  if (q3.includes("C")) avoidList.push("不一上来就分析原因。");
+  if (q3.includes("D")) avoidList.push("不说「你就是在逃避」这种话。");
+  if (q3.includes("E")) avoidList.push("不列一堆建议给你。");
+  if (q3.includes("F")) avoidList.push("不一直追问你「为什么」。");
+  if (q3.includes("G")) avoidList.push("不用太冷静客观的语气。");
+
+  const understandList = [];
+  if (q1 === "A") understandList.push("你一直在撑，很累了。");
+  if (q1 === "B") understandList.push("你脑子里事情太多，需要有人帮你理一理。");
+  if (q1 === "C") understandList.push("你还在找方向，这不丢人。");
+  if (q1 === "D") understandList.push("你表面平静，但心里在消耗。");
+  if (q1 === "E") understandList.push("你想动起来，但启动太难了。");
+  if (q1 === "F") understandList.push("你只是想找一个懂你的存在。");
+  if (answers.Q6 && Array.isArray(answers.Q6)) {
+    if (answers.Q6.includes("A")) understandList.push("想变好但没能量，这种拉扯很累。");
+    if (answers.Q6.includes("B")) understandList.push("想松弛又怕落后，很难真正放松。");
+    if (answers.Q6.includes("E")) understandList.push("想独立又想被理解，两种需要都合理。");
+  }
+  if (!understandList.length) understandList.push("你现在的状态，我先记住了。");
+
+  const summaryList = [];
+  if (q1) summaryList.push("当前状态：" + persona.name);
+  if (answers.Q4) {
+    const commMap = { A: "先陪伴再分析", B: "先帮你表达感受", C: "温柔分析", D: "直接沟通", E: "等你准备好了再行动", F: "灵活判断你的状态" };
+    summaryList.push("沟通偏好：" + (commMap[answers.Q4] || "待了解"));
+  }
+  if (answers.Q12) {
+    const pushMap = { A: "接受晚间主动关心", B: "偶尔主动就好", C: "重要事项才跟进", D: "不太喜欢主动提醒", E: "以后再说" };
+    summaryList.push("主动陪伴：" + (pushMap[answers.Q12] || "待了解"));
+  }
+  if (answers.Q13) summaryList.push("最近消耗的事：" + answers.Q13.slice(0, 50));
+  if (answers.Q14) summaryList.push("希望我记住：" + answers.Q14.slice(0, 50));
+
+  const resultPage = {
+    headline: "你现在的状态，更像「" + persona.name + "」",
+    intro_copy: persona.intro,
+    one_sentence: understandList[0],
+    how_i_understand_you: understandList,
+    how_i_should_support_you: supportList,
+    how_i_should_not_talk_to_you: avoidList,
+    current_profile_summary: summaryList
+  };
+
+  return {
+    ok: true,
+    persona_result: {
+      primary_persona_name: persona.name,
+      confidence: "medium",
+      q1_state: q1
+    },
+    profile_patch: patch,
+    result_page: resultPage
+  };
+}
+
 
 function handleAdminApi(path, options) {
   if (path === "/api/admin/model-config" && (!options.method || options.method === "GET")) {
