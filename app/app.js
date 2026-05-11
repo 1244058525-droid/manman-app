@@ -267,13 +267,15 @@ async function restoreUserProfile() {
   try {
     const result = await apiRequest(`/api/user/profile?user_id=${encodeURIComponent(USER_ID)}`);
     if (result.user && applySavedProfile(result.user)) {
+      const existing = readLocalProfile() || {};
       writeLocalProfile({
         onboarding_completed: true,
         result_saved: Boolean(result.user.result_saved),
         persona_result: result.user.persona_result || result.user.pending_persona_result,
         profile_patch: result.user.user_profile || result.user.pending_profile_patch,
         result_page: result.user.result_page || result.user.pending_result_page,
-        answers: result.user.answers || answers
+        answers: result.user.answers || answers,
+        learned_preferences: existing.learned_preferences || []
       });
       return true;
     }
@@ -1430,7 +1432,11 @@ chatForm.addEventListener("submit", async (event) => {
     }
     appendMessage("assistant", result.assistant_reply || result.message, { fromComposer: true });
     if (result.memory_update_suggestion?.should_update) {
-      appendMemorySuggestion(result.memory_update_suggestion);
+      const savedPrefs = (readLocalProfile() || {}).learned_preferences || [];
+      const alreadySaved = savedPrefs.some((p) => p.field_path === result.memory_update_suggestion.field_path);
+      if (!alreadySaved) {
+        appendMemorySuggestion(result.memory_update_suggestion);
+      }
     }
   } catch (error) {
     appendMessage("assistant", "我这边暂时没连上后端，但我还在。你可以先启动本地服务后继续。", {
