@@ -285,16 +285,24 @@ async function restoreUserProfile() {
 }
 
 async function apiRequest(path, options = {}) {
-  if (isGitHubPages) {
+  if (isGitHubPages || (window.location.protocol === "file:" && path.startsWith("/api/onboarding/"))) {
     return await apiRequestLocal(path, options);
   }
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "请求失败");
-  return data;
+
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "请求失败");
+    return data;
+  } catch (error) {
+    if (window.location.protocol === "file:") {
+      return await apiRequestLocal(path, options);
+    }
+    throw error;
+  }
 }
 
 async function apiRequestLocal(path, options = {}) {
@@ -312,21 +320,146 @@ async function apiRequestLocal(path, options = {}) {
   throw new Error("此功能需要后端支持");
 }
 
+// === 客户端运行时检测 ===
+function _includesAny(text, keywords) {
+  return keywords.some((kw) => text.includes(kw));
+}
+
+function _detectIntensity(message) {
+  if (_includesAny(message, ["活不下去", "不想活", "想死", "自杀"])) return "high";
+  if (_includesAny(message, ["撑不住", "崩溃", "绷不住", "好累", "很累", "难受", "想哭", "好烦", "废", "麻木", "没电", "空", "不想说", "反正就那样"])) return "medium";
+  return "low";
+}
+
+function _detectScene(message) {
+  if (_includesAny(message, ["要不要买", "买", "下单", "购物车", "评价", "香薰", "包", "沙发", "材质"])) return "consumption_decision";
+  if (_includesAny(message, ["怎么回复", "拒绝", "不想答应", "冷淡", "不开心", "关系", "她", "他"])) return "relationship_boundary";
+  if (_includesAny(message, ["启动不了", "动不起来", "第一步", "不知道先做什么"])) return "low_energy_action";
+  if (_includesAny(message, ["帮我分析", "分析一下", "为什么", "理清楚", "怎么看", "拆一下"])) return "analysis_request";
+  if (_includesAny(message, ["怎么办", "下一步", "怎么做", "给我方案", "直接说", "做个决定"])) return "action_request";
+  if (_includesAny(message, ["是不是太敏感", "是不是想太多", "是不是又", "我是不是", "内耗"])) return "self_doubt";
+  if (_detectIntensity(message) !== "low") return "emotional_dump";
+  return "open_topic";
+}
+
+function _detectReadinessState(message) {
+  const intensity = _detectIntensity(message);
+  const scene = _detectScene(message);
+  const explicitAnalysis = _includesAny(message, ["帮我分析", "分析一下", "为什么", "理清楚", "怎么看", "拆一下"]);
+  const explicitAction = _includesAny(message, ["怎么办", "该怎么", "下一步", "怎么回复", "帮我写", "改写", "润色", "生成", "要不要买", "帮我选", "推荐", "直接说", "做个决定", "给我方案"]);
+
+  if ((intensity === "high" && !explicitAnalysis && !explicitAction) || (intensity === "high" && _includesAny(message, ["怎么办", "不知道"]))) {
+    return { readiness_state: "emotional", response_mode: "companion_mode", emotional_intensity: intensity, current_scene: "emotional_dump" };
+  }
+  if (intensity === "medium" && !explicitAnalysis && !explicitAction) {
+    return { readiness_state: "mixed", response_mode: "reflection_mode", emotional_intensity: intensity, current_scene: scene };
+  }
+  if (explicitAnalysis) {
+    return { readiness_state: "rational", response_mode: "analysis_mode", emotional_intensity: intensity, current_scene: scene };
+  }
+  if (explicitAction || scene === "consumption_decision" || scene === "action_request") {
+    return { readiness_state: "action_ready", response_mode: "action_mode", emotional_intensity: intensity, current_scene: scene };
+  }
+  return { readiness_state: "mixed", response_mode: "reflection_mode", emotional_intensity: intensity, current_scene: scene };
+}
+
+function _detectMemoryUpdate(message, runtimeState) {
+  if (runtimeState.emotional_intensity === "high") return { should_update: false };
+
+  const rules = [
+    { keywords: ["猫"], field: "pet_profile", copy: "我可以记住你家里有猫吗？以后聊到睡眠、生活节奏或购买选择时，我会把这点考虑进去。" },
+    { keywords: ["狗"], field: "pet_profile", copy: "我可以记住你家里有狗吗？以后聊到生活安排时，我会把这点考虑进去。" },
+    { keywords: ["刷手机", "短视频", "停不下来"], field: "emotion_pattern.coping_style", copy: "我注意到晚上刷手机停不下来可能是你最近的一个消耗点，要先记一下吗？" },
+    { keywords: ["冷淡", "太敏感", "想太多"], field: "emotion_pattern.triggers", copy: "关系里对方回复冷淡时，你可能会更容易不安。这个要先记进陪伴偏好吗？" },
+    { keywords: ["孩子", "宝宝", "小孩"], field: "care_profile", copy: "我记一下你有孩子要照顾？以后聊到精力分配时我会考虑这点。" },
+    { keywords: ["加班", "熬夜", "通宵"], field: "work_learning_profile", copy: "你最近好像经常加班/熬夜，要先记一下你的工作节奏吗？" },
+    { keywords: ["失眠", "睡不着", "睡眠"], field: "health_profile", copy: "我注意到你提到了睡眠问题，要先记一下吗？以后聊到状态时我会参考。" },
+    { keywords: ["独居", "一个人住"], field: "living_profile", copy: "我记一下你是一个人住？以后聊到生活安排时我会考虑这点。" }
+  ];
+
+  for (const rule of rules) {
+    if (_includesAny(message, rule.keywords)) {
+      return { should_update: true, field_path: rule.field, confidence: "medium", needs_user_confirmation: true, confirmation_copy: rule.copy };
+    }
+  }
+  return { should_update: false };
+}
+
+function _getPersonaHint(personaResult) {
+  if (!personaResult || typeof personaResult !== 'object') return "";
+  const name = personaResult.persona_name || personaResult.name || "";
+  const intro = personaResult.persona_intro || personaResult.intro || "";
+  const support = personaResult.persona_support || personaResult.support || "";
+  const avoid = personaResult.persona_avoid || personaResult.avoid || "";
+  let hint = "";
+  if (name) hint += `用户画像类型：${name}。`;
+  if (intro) hint += `画像描述：${intro}。`;
+  if (support) hint += `陪伴方式：${support}。`;
+  if (avoid) hint += `避免说的话：${avoid}。`;
+  return hint;
+}
+
 async function callMiMoDirectly(options) {
   const payload = JSON.parse(options.body || "{}");
   const message = payload.message || "";
   const personaResult = payload.persona_result || "";
   const userProfile = payload.user_profile || "";
   const recentMessages = payload.recent_messages || [];
+  const remoteConfig = payload.remote_config || {};
 
-  let systemPrompt = "你是「慢慢」，一款 AI 陪伴产品。你不急着给答案，而是先理解用户的状态，再用适合的方式陪伴。回复要自然口语化，不要报告腔。";
-  if (personaResult) systemPrompt += "\n用户画像：" + (typeof personaResult === 'object' ? JSON.stringify(personaResult) : personaResult);
+  // 运行时检测
+  const runtimeState = _detectReadinessState(message);
+  const memorySuggestion = _detectMemoryUpdate(message, runtimeState);
+  const personaHint = _getPersonaHint(personaResult);
+
+  // 构建系统提示
+  let systemPrompt = "你是「慢慢」，一款 AI 陪伴产品。你不急着给答案，而是先理解用户的状态，再用适合的方式陪伴。回复要自然口语化，不要报告腔，像朋友聊天一样。";
+
+  if (personaHint) systemPrompt += "\n\n" + personaHint;
   if (userProfile) systemPrompt += "\n用户偏好：" + (typeof userProfile === 'object' ? JSON.stringify(userProfile) : userProfile);
 
+  // 探索式问答规则
+  systemPrompt += "\n\n【探索式问答规则】";
+  systemPrompt += "\n- 情绪很浓时不探索，只陪伴";
+  systemPrompt += "\n- 不能把推测当事实";
+  systemPrompt += "\n- 不能连续追问";
+  systemPrompt += "\n- 每次最多只探索一个信息缺口";
+  systemPrompt += "\n- 探索时用低压、自然、可跳过的句式";
+  systemPrompt += "\n- 用户不想说就停止";
+
+  // 根据 readiness_state 调整回复策略
+  if (runtimeState.readiness_state === "emotional") {
+    systemPrompt += "\n\n【当前状态：情绪期】先接住情绪，不分析不建议，只陪伴。用简短温暖的话承接。";
+  } else if (runtimeState.readiness_state === "mixed") {
+    systemPrompt += "\n\n【当前状态：混合期】先承接情绪，再顺着具体内容轻轻展开。可以轻问一个问题，但必须允许用户不回答。";
+  } else if (runtimeState.readiness_state === "rational") {
+    systemPrompt += "\n\n【当前状态：理性期】用户能接住分析，可以帮ta梳理、映照、轻轻提问。";
+  } else if (runtimeState.readiness_state === "action_ready") {
+    systemPrompt += "\n\n【当前状态：行动期】用户需要具体建议或方案，给一个很小、能做到的下一步。";
+  }
+
+  // 场景补充
+  const sceneHints = {
+    consumption_decision: "用户在纠结一个消费决定，别直接说买不买，先帮ta看清楚自己真正需要什么。",
+    relationship_boundary: "用户在处理关系问题，先接住那种悬着的感觉。",
+    low_energy_action: "用户能量很低启动不了，别催，先帮ta找到最小的一步。",
+    self_doubt: "用户在自我怀疑，先看见感受，不急着审判。",
+    analysis_request: "用户想分析问题，帮ta拆开看，但不急着下结论。",
+    action_request: "用户需要行动建议，给具体、可执行的下一步。"
+  };
+  if (sceneHints[runtimeState.current_scene]) {
+    systemPrompt += "\n" + sceneHints[runtimeState.current_scene];
+  }
+
+  // 用户偏好
+  if (remoteConfig.prompt_extra) systemPrompt += "\n\n" + remoteConfig.prompt_extra;
+
+  // 构建消息
   const messages = [{ role: "system", content: systemPrompt }];
   for (const msg of recentMessages) messages.push({ role: msg.role, content: msg.content });
   messages.push({ role: "user", content: message });
 
+  // 调用 MiMo API
   const mimoResp = await fetch("https://api.xiaomimimo.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -339,7 +472,17 @@ async function callMiMoDirectly(options) {
   if (!mimoResp.ok) throw new Error("AI 回复生成失败");
   const mimoData = await mimoResp.json();
   const reply = mimoData.choices?.[0]?.message?.content || "抱歉，我现在没能生成回复。";
-  return { ok: true, message: reply, assistant_reply: reply, mode: "client-direct" };
+
+  return {
+    ok: true,
+    message: reply,
+    assistant_reply: reply,
+    mode: "client-direct",
+    conversation_mode: "companion",
+    response_mode: runtimeState.response_mode,
+    runtime_state: runtimeState,
+    memory_update_suggestion: memorySuggestion
+  };
 }
 
 function handleUserApi(path, options) {
@@ -518,10 +661,6 @@ function showView(view) {
 
 navButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    if (button.dataset.view === "home" && shouldEnterChatAfterIntro) {
-      showView("chat");
-      return;
-    }
     showView(button.dataset.view);
   });
 });
@@ -758,7 +897,14 @@ function renderQuestionnaire() {
     nextButton.className = "primary-button";
     nextButton.type = "button";
     nextButton.textContent = index === questions.length - 1 ? "生成我的陪伴说明" : "下一题";
+    nextButton.disabled = isSubmittingQuestionnaire || !isQuestionAnswered(index);
+    nextButton.classList.toggle("is-disabled", nextButton.disabled);
     nextButton.addEventListener("click", () => {
+      if (!isQuestionAnswered(index)) {
+        updateQuestionControls(index);
+        return;
+      }
+
       if (index === questions.length - 1) {
         submitQuestionnaire();
         return;
