@@ -226,13 +226,11 @@ if (forceFreshOnboarding) {
 }
 
 function writeLocalProfile(patch) {
-  const prev = readLocalProfile() || {};
   const next = {
-    ...prev,
+    ...(readLocalProfile() || {}),
     ...patch,
     updated_at: new Date().toISOString()
   };
-  console.log('[慢慢] writeLocalProfile:', { prev_keys: Object.keys(prev), patch_keys: Object.keys(patch), next_learned: next.learned_preferences?.length || 0 });
   localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(next));
   sessionStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(next));
   return next;
@@ -457,6 +455,15 @@ async function callMiMoDirectly(options) {
 
   // 用户偏好
   if (remoteConfig.prompt_extra) systemPrompt += "\n\n" + remoteConfig.prompt_extra;
+
+  // 已记住的记忆
+  const learnedPrefs = (readLocalProfile() || {}).learned_preferences || [];
+  if (learnedPrefs.length > 0) {
+    systemPrompt += "\n\n【你已经记住的用户信息】以下是你之前确认记住的内容，在回复时自然地参考，但不要复述标签：";
+    for (const pref of learnedPrefs) {
+      if (pref.copy) systemPrompt += "\n- " + pref.copy;
+    }
+  }
 
   // 构建消息
   const messages = [{ role: "system", content: systemPrompt }];
@@ -1293,9 +1300,7 @@ function appendMemorySuggestion(suggestion) {
           confidence: suggestion.confidence,
           created_at: new Date().toISOString()
         }];
-        console.log('[慢慢] 记住 clicked:', { field_path: suggestion.field_path, total_learned: learned.length });
         updateSavedProfile({ learned_preferences: learned });
-        console.log('[慢慢] 保存后 readLocalProfile:', { learned_preferences: readLocalProfile()?.learned_preferences?.length || 0 });
         box.querySelector("p").textContent = "好，我会先轻轻记住。你之后也可以在画像页删掉。";
       } else if (action === "edit") {
         showView("profile");
@@ -1438,7 +1443,6 @@ chatForm.addEventListener("submit", async (event) => {
     if (result.memory_update_suggestion?.should_update) {
       const savedPrefs = (readLocalProfile() || {}).learned_preferences || [];
       const alreadySaved = savedPrefs.some((p) => p.field_path === result.memory_update_suggestion.field_path);
-      console.log('[慢慢] 记忆建议:', { field_path: result.memory_update_suggestion.field_path, alreadySaved, savedPrefs_count: savedPrefs.length });
       if (!alreadySaved) {
         appendMemorySuggestion(result.memory_update_suggestion);
       }
