@@ -1,4 +1,4 @@
-const CACHE_NAME = "manman-ui-refresh-v3";
+const CACHE_NAME = "manman-ui-refresh-v4";
 const ASSETS = [
   "/",
   "/index.html",
